@@ -1,26 +1,19 @@
-# NEA 1889 — Vercel migration candidate
+# NEA 1889
 
-This is an independently runnable Next.js application. It reuses the published reservation interface and assets, replacing ChatGPT authentication with Clerk and Cloudflare D1 with PostgreSQL. No ChatGPT service is required at runtime.
+Restaurant reservation app with a public booking form, personal reservation status and cancellation, and a staff management panel.
 
-**Not yet the live production site. Do not move nea1889.pizza until the release checklist is complete and the owner authorizes it.**
+**Stack:** Next.js, React, TypeScript, Neon PostgreSQL and Clerk authentication. Hosted on the existing [Vercel project](https://vercel.com/neapizza1889/nea-1889-reservations).
 
-## Setup
+## Work together
 
-Node.js 24; `npm ci`. Copy `.env.example` to ignored `.env.local`, set values privately, then run `node --env-file=.env.local scripts/migrate.mjs` and `npm run dev`. For CLI scripts, `.env.local` is not loaded automatically; use Node's `--env-file` option. Run `npm test`, `npm run typecheck`, `npm run build`.
+Use this repository for source code, [issues and the roadmap](https://github.com/Nejo12/nea1889pizza/issues/2). Make changes on a branch and open a pull request for review before merging into `main`.
 
-- Vercel project: https://vercel.com/neapizza1889/nea-1889-reservations
-- Production, unchanged: https://nea1889.pizza
-- GitHub repository: not identified or connected. Never invent a repository URL.
-- Source baseline: Sites commit `0d1b3cacd8983fe36ce38316d19ddae71360db26`.
+## Local development
 
-## Structure
+Use Node.js 24. Run `npm ci`, copy `.env.example` to `.env.local`, configure your development database and Clerk credentials privately, then run `npm run dev`. Never commit secrets.
 
-`app/`: public reservations, personal status/cancellation, login and staff panel. `lib/`: booking rules, authentication and PostgreSQL adapter. `public/`: original logo, background and PWA assets. `database/schema.sql`: PostgreSQL schema. `scripts/`: schema setup and verified import. `tests/`: booking, auth and PostgreSQL tests. `docs/`: inventory, handover and release checklist.
+Checks: `npm test`, `npm run typecheck`, `npm run build`.
 
-## Environment
+## Current status
 
-`DATABASE_URL` and Clerk keys are already provisioned by integrations in the existing Vercel project. Configure `STAFF_EMAILS` with verified primary emails, `AUTHORIZED_ORIGINS` with exact allowed origins, and `NEA_DATABASE_SCHEMA` with the reviewed schema. An empty staff list denies access. Preview automatically accepts its exact `VERCEL_URL`; it does not accept every vercel.app origin.
-
-Preview builds initialize only `nea_migration_preview`. This is a separate schema on the connected database, not a separate database or Neon branch. No real reservations are imported by the build. Production builds do not run database migrations. Prefer a dedicated Neon preview branch for ongoing development.
-
-See `docs/GABRIEL.md`, `docs/INVENTARIO.md`, and `docs/RILASCIO.md`.
+The application is available as a Vercel preview; the production migration is not complete. Keep the existing backend and authentication in place. [Supabase migration](https://github.com/Nejo12/nea1889pizza/issues/1) is deferred and is not implemented.
