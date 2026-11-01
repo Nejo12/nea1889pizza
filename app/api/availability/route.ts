@@ -4,6 +4,7 @@ import {isFutureSlot,isRealDate} from '@/lib/reservation-rules';
 export const dynamic='force-dynamic';
 const querySchema=z.object({date:z.string().refine(isRealDate),guests:z.coerce.number().int().min(1).max(12)});
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
+// Requestability is advisory; final reservation confirmation remains staff-controlled.
 export async function GET(req:Request){
  try{
   const url=new URL(req.url);
