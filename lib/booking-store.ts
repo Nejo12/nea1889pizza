@@ -12,7 +12,7 @@ export async function availabilityForDate(date:string,guests:number):Promise<Dat
  const blocked=await db.prepare("SELECT date FROM blocked_days WHERE owner='nea-1889' AND date=?").bind(date).first<{date:string}>();
  if(blocked)return {date,blocked:true,slots:slotsForDate(date).map(time=>({time,requestable:false,remainingSeats:0}))};
  const rows=await db.prepare('SELECT table_id,minute FROM occupancy WHERE date=?').bind(date).all();
- const occupancy=(rows.results||[]) as {table_id:string;minute:number}[];
+ const occupancy=(rows.results||[]) as unknown as {table_id:string;minute:number}[];
  return {date,blocked:false,slots:slotsForDate(date).map(time=>{
   const minutes=new Set(slotMinutes(time));
   const occupied=new Set(occupancy.filter(row=>minutes.has(Number(row.minute))).map(row=>row.table_id));
