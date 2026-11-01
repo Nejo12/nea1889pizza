@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {database} from '@/lib/staff';
-import {hashToken,publicBooking,Booking} from '@/lib/booking-store';
+import {hashToken,publicBooking,Booking,availabilityForDate} from '@/lib/booking-store';
 import {reservationSchema} from '@/lib/reservation-rules';
 export const dynamic='force-dynamic';
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
@@ -20,6 +20,10 @@ export async function POST(req:Request){
   const d=parsed.data;
   const limit=await db.prepare("SELECT COUNT(*) AS n FROM bookings WHERE email=? AND created>? AND status='pending'").bind(d.email,new Date(Date.now()-86400000).toISOString()).first<{n:number}>();
   if(limit&&limit.n>=5)return reply({error:'Mehrere offene Anfragen vorhanden. Bitte das Restaurant direkt kontaktieren.'},429);
+  const availability=await availabilityForDate(d.date,d.guests);
+  if(availability.blocked)return reply({error:'An diesem Tag werden keine neuen Anfragen angenommen.'},409);
+  const requested=availability.slots.find(slot=>slot.time===d.time);
+  if(!requested?.requestable)return reply({error:'Diese Wunschzeit ist gerade nicht mehr anfragbar. Bitte eine andere Zeit wählen.'},409);
   const now=new Date().toISOString();
   // Insert only while the date is open, within the same SQL statement.
   const inserted=await db.prepare("INSERT INTO bookings (id,token_hash,name,email,phone,date,time,guests,notes,status,table_ids,duration,created,updated) SELECT ?,?,?,?,?,?,?,?,?,'pending','[]',75,?,? WHERE NOT EXISTS (SELECT 1 FROM blocked_days WHERE owner='nea-1889' AND date=?) ON CONFLICT(id) DO NOTHING").bind(d.requestId,digest,d.name,d.email,d.phone,d.date,d.time,d.guests,d.notes,now,now,d.date).run();
