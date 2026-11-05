@@ -131,3 +131,33 @@
 @media(max-width:900px){.neo-hero,.neo-story,.neo-visit,.neo-booking-layout,.neo-menu-section{grid-template-columns:1fr}.neo-hero-art{min-height:380px}.neo-poster-band{grid-template-columns:1fr}.neo-menu-section{gap:12px}.neo-footer{flex-direction:column}.neo-footer nav{justify-content:flex-start}}
 @media(max-width:600px){.neo-header{flex-direction:column;align-items:flex-start;padding:14px 18px;gap:15px}.neo-brand img{width:52px;height:52px}.neo-brand strong{font-size:25px}.neo-nav{width:100%;gap:16px;justify-content:space-between}.neo-nav a{font-size:10px}.neo-nav .neo-call{display:none}.neo-section{padding:44px 20px}.neo-hero{min-height:0}.neo-hero-art{min-height:290px}.neo-art-caption{font-size:50px}.neo-art-stamp{width:65px;height:75px;font-size:34px}.neo-actions{flex-direction:column}.neo-button{width:100%}.neo-hero-details{font-size:8px}.neo-menu-tabs{position:relative;padding:12px}.neo-menu-item{flex-direction:column;gap:4px}.neo-booking-form{padding:20px}.neo-footer nav{gap:14px}}
 @media(prefers-reduced-motion:reduce){.neo-site *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Staff/admin, login and reservation-status visual alignment. Functionality unchanged. */
+.login-shell{background:#18120e;color:#ede4d8;border:1px solid #c58c42;border-radius:0;box-shadow:12px 12px 0 #c58c4222;padding:34px;max-width:580px}
+body:has(.login-shell){background:#0e0c07;background-image:repeating-linear-gradient(135deg,#c58c4211 0,transparent 1px,transparent 85px);min-height:100vh}
+.login-shell h1{color:#ede4d8;font-family:Georgia,serif;font-size:42px}
+.login-shell p{color:#e2d0b6}
+.login-shell a{color:#d9a957}
+.login-shell .primary{background:#a12b29;border-color:#a12b29;color:#fff}
+.login-shell .copy-link{color:#e3b474}
+.login-shell input{background:#fffdf7;color:#16110c}
+.app .sidebar{background:#0e0c07;color:#ede4d8;border-right:1px solid #a67a3c}
+.app .sidebar .nav.active{background:#342316;color:#e4bd7d}
+.app .sidebar .side-label,.app .sidebar .private{color:#c1ab89}
+.app .main-shell{background:#ede4d8}
+.app .main-shell>header{background:#18120e;color:#ede4d8;border-bottom:1px solid #c58c42}
+.app .main-shell .demo-banner{background:#ddc7a7;color:#39291a}
+.app .main-shell .eyebrow{color:#a12b29}
+.app .main-shell .primary{background:#a12b29;border-color:#a12b29;color:#fff}
+.app .main-shell .heading h1,.app .main-shell .heading h1 em{color:#352319}
+.app .main-shell .heading h1 em{color:#a12b29}
+.app .main-shell .stat,.app .main-shell .reservations{border-color:#c4a77b}
+.app .main-shell .stat{background:#fff9ed}
+.status-page{margin:0 auto;min-height:100vh;max-width:none;padding:50px 20px 70px;background:#0e0c07;color:#ede4d8;text-align:center}
+.status-page>a>img{width:105px;height:105px}
+.status-page .booking-card{max-width:620px;margin:0 auto;background:#ede4d8;color:#19120d;border:1px solid #c58c42;border-radius:0;text-align:left}
+.status-page .booking-card h1{font-family:Georgia,serif;color:#19120d}
+.status-page .booking-card a{color:#8d2b26}
+.status-page .booking-card .primary{background:#a12b29;border-color:#a12b29;color:#fff}
+@media(max-width:600px){.login-shell{margin:20px;padding:20px}.app .main-shell>header{padding:14px 18px}}
