@@ -5,9 +5,15 @@ export function databaseSchema() {
  if(!/^[a-z][a-z0-9_]{0,62}$/.test(schema)) throw Error('Set NEA_DATABASE_SCHEMA explicitly.');
  return schema;
 }
+function useTls(url:string) {
+ try {return !['localhost','127.0.0.1','::1','[::1]'].includes(new URL(url).hostname);} catch {return true;}
+}
+// Server-only. DATABASE_URL must be the least-privilege runtime role (nea_runtime) on the
+// Supabase transaction pooler. Schema changes use a separate migration connection that this app never reads.
 function connection() {
  if(!process.env.DATABASE_URL) throw Error('DATABASE_URL is missing.');
- return client ??= postgres(process.env.DATABASE_URL,{max:3,prepare:false,idle_timeout:20,connect_timeout:10});
+ // prepare:false is required by transaction poolers; TLS is mandatory for every non-local host.
+ return client ??= postgres(process.env.DATABASE_URL,{max:3,prepare:false,idle_timeout:20,connect_timeout:10,...(useTls(process.env.DATABASE_URL)?{ssl:'require' as const}:{})});
 }
 export function parameterize(query:string) {
  let index=0;
@@ -18,7 +24,7 @@ class Statement {
  constructor(readonly query:string){}
  bind(...values:(string|number|null)[]){this.values=values;return this;}
  async rows(){return connection().begin(async tx=>{
-  // Neon pools connections by transaction: never rely on startup/session search_path.
+  // Transaction poolers (Supabase Supavisor) hand out connections per transaction: never rely on startup/session search_path.
   await tx.unsafe(`SET LOCAL search_path TO "${databaseSchema()}"`);
   return Array.from(await tx.unsafe(parameterize(this.query),this.values));
  });}

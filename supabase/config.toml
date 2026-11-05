@@ -1,0 +1,53 @@
+# Supabase local configuration for NEA 1889 (Issue #11).
+# Generated with supabase CLI 3.0.0, then trimmed: this issue only needs PostgreSQL.
+# Supabase Auth belongs to Issue #12; it stays disabled here.
+# Reference: https://supabase.com/docs/guides/local-development/cli/config
+project_id = "nea1889pizza"
+
+# The Data API is not used. All guest records are reached only through the
+# Next.js server and its private SQL role, never through PostgREST.
+[api]
+enabled = false
+# Even if the Data API is switched on later, the application schema `nea`
+# must never be listed here.
+schemas = ["public"]
+
+[db]
+# Ports are offset from the CLI defaults so this project can run beside other local stacks.
+port = 54522
+shadow_port = 54520
+health_timeout = "2m"
+# Must match the hosted project's server_version major (verify with `SHOW server_version;`).
+major_version = 17
+
+[db.pooler]
+enabled = false
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+# Seed data is deliberately absent. Tests use synthetic fixtures only.
+enabled = false
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = false
+
+[local_smtp]
+enabled = false
+
+[storage]
+enabled = false
+
+[auth]
+# Issue #12 introduces Supabase Auth.
+enabled = false
+
+[edge_runtime]
+enabled = false
+
+[analytics]
+enabled = false
