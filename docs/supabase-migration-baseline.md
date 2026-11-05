@@ -2,7 +2,7 @@
 
 Audit date: 2026-11-05. Tracking: [#10](https://github.com/Nejo12/nea1889pizza/issues/10), parent [#1](https://github.com/Nejo12/nea1889pizza/issues/1).
 
-Status: evidence collected and architecture proposed; resource-level data inventory and Founder decisions remain open. This document does not certify migration readiness or authorize live changes.
+Status: evidence collected and architecture proposed. A later same-day follow-up resolved Neon access and verified branch/database/table counts; data classification and Founder decisions remain open. This document does not certify migration readiness or authorize live changes.
 
 ## 1. Authority and method
 
@@ -25,7 +25,7 @@ Main contains no repository AGENTS.md, CLAUDE.md, docs directory or GitHub Actio
 
 | Item | Verified evidence | Remaining limitation |
 |---|---|---|
-| Neon resource | `neon-alizarin-bridge`; Vercel store `store_FIoZOSSRJUbfMjYM`; external project `dry-cherry-43460651` | Branch/endpoint/database IDs and actual table counts not yet inspected |
+| Neon resource | `neon-alizarin-bridge`; Vercel store `store_FIoZOSSRJUbfMjYM`; external project `dry-cherry-43460651` | Verified later: main branch br-wispy-mountain-b9ldiizf, primary endpoint ep-sparkling-union-b977mzy0, database neondb; counts below |
 | Neon installation | `icfg_zRqGE8I8TsITztoUJq8PHJXy`; native Vercel Marketplace; owner team above | Do not uninstall whole integration without consumer inventory |
 | Neon connectivity | Exactly one Vercel connected project in store metadata, connected to Preview AND Production | Does not exclude external consumers, extra branches, scripts or old deployments |
 | Neon location/features | Metadata region `fra1`; `auth: true`; resource ready/available | Neon Auth is provisioned metadata; no evidence the current Next.js code uses it |
@@ -39,7 +39,7 @@ Main contains no repository AGENTS.md, CLAUDE.md, docs directory or GitHub Actio
 | Lovable database | get_database_status: enabled=false | Do not enable another database automatically |
 | Public website | nea1889.pizza serves Lovable; reservation page displays explicit browser-only demo warning | No central demo-booking inventory or proof that nobody entered real details |
 
-The Neon dashboard SSO attempt reached an email-activation requirement. No activation links were resent, mailbox inspected, data queried or account settings changed. Provider-level branch/data inventory is blocked until the owner completes that activation/sign-in. The transient sign-in page can expire; return through Vercel's Open in Neon control after activation.
+The initial Neon dashboard SSO attempt reached an email-activation requirement; no activation links were resent or mailbox inspected. On the later same-day owner-requested access check, Vercel SSO opened the dashboard successfully without another activation step. Two read-only SELECT queries inspected metadata and aggregate counts only; no schema/data/account changes were made. The earlier activation blocker is resolved. No credentials were exposed.
 
 ### Environment dependencies
 
@@ -87,7 +87,7 @@ DNS records for apex and www point to Lovable's 185.158.133.1; the custom domain
 
 Git blob comparison confirms PR #9 leaves admin/manager, both reservation API route files, booking-store, database adapter and reservation-rules unchanged from main. Its visual implementation is not evidence of a Supabase migration.
 
-Legacy reservations and bookings coexist in the schema; actual row counts and data significance are unknown. No table or confirmed booking is disposable without reconciliation.
+Legacy reservations and bookings coexist in the schema. The later SELECT inventory found four bookings (two pending and two cancelled), zero legacy reservations, zero blocked days and zero occupancy rows. Data significance remains unclassified; no booking is disposable merely because it is in a Preview schema.
 
 Potential integrity concerns to test in #11/#13, not silently fix in a documentation task: confirmation reads booking before its write transaction; public pending-request quotas are read-before-write; status transitions are an enum, not a demonstrated complete transition policy. These are investigation targets, not a claim that an exploit or production failure was reproduced.
 
@@ -237,11 +237,52 @@ No build/tests are required for this documentation-only change. Validate source 
 
 ## 10. Outstanding blockers / next owner
 
-- Founder: activate/sign in to Neon so a read-only branch/schema/table-count and external-consumer inventory can be completed. Do not paste activation links or credentials into GitHub.
+- Neon activation/access blocker resolved in the later same-day follow-up. Founder/operator must classify the four existing bookings before any discard; pending requests must not be assumed synthetic.
 - Founder: resolve D1 destination ownership and D2/D3 actual schedule/capacity first. No Supabase project is created by this audit.
-- Engineer after access: record exact Neon branch/endpoint/database/schema IDs, counts by status, source significance, current billing/usage and scoped backup/restore plan. No PII in public evidence.
+- Engineer: branch/endpoint/database/schema IDs and aggregate counts are now recorded below. Complete source significance, external-consumer and backup/restore verification. No PII in public evidence.
 - Engineer/Founder: resolve the Production alias discrepancy and retained-deployment dependencies before any deletion.
 - Operator: provide menu/legal facts and final rules before public release.
 - Engineer: transfer verified approved assets and implement measured parity gaps only in the selected implementation task; all asset transfer/checksum states here remain pending.
 
 Issue #10 must remain open while these blockers exist. This PR is a reviewable baseline, not a completed migration or full design acceptance.
+
+
+## 11. Later same-day follow-up — Neon access resolved
+
+The owner requested help opening Neon. Returning through the existing Vercel resource's Open in Neon link successfully reached the existing project. No additional activation, signup, password entry, purchase or account-setting change was required. This section supersedes the initial activation blocker reported in PR #16 and issue #10.
+
+| Item | Verified value |
+|---|---|
+| Account context | Vercel: Neapizza1889 |
+| Neon organization from visible billing URL | org-plain-sound-64013462 |
+| Project | neon-alizarin-bridge / dry-cherry-43460651 |
+| Region | AWS Europe Central 1 (Frankfurt) |
+| Branch count | 1 |
+| Default branch | main / br-wispy-mountain-b9ldiizf |
+| Primary compute endpoint | ep-sparkling-union-b977mzy0 |
+| Database / query role | neondb / neondb_owner |
+| Source PostgreSQL version from SELECT | 18.6 (ac70818) |
+| Application schema found | nea_migration_preview |
+| Other non-system schema with base tables | neon_auth (nine tables) |
+| Listed plan / compute / history retention | Free / 0.25 CU / 6 hours |
+| Dashboard usage since Nov 1 | 0.37 CU-hours; storage 32.33 MB; history 478.57 kB; network transfer 307.69 kB |
+| Object storage reported | 0 kB |
+
+The Branches page and project overview both show one branch. Do not confuse the application Preview schema with a separate Neon Preview branch. The database metadata query returned 13 non-system base tables: four in nea_migration_preview and nine in neon_auth. No application Production/public tables were returned in neondb; the effective configuration/functionality of historical Production deployments still requires its own verification.
+
+| Table | Aggregate count |
+|---|---:|
+| nea_migration_preview.bookings | 4: pending 2, cancelled 2 |
+| nea_migration_preview.reservations | 0 (GROUP BY status returned no groups) |
+| nea_migration_preview.blocked_days | 0 |
+| nea_migration_preview.occupancy | 0 |
+| neon_auth.user | 0 |
+| neon_auth.account | 0 |
+| neon_auth.session | 0 |
+| neon_auth.invitation | 0 |
+
+No guest names, emails, phones, notes, tokens or auth secrets were selected. The earlier synthetic request/cancellation test explains at least one cancelled fixture, but the remaining rows have not been classified. Zero occupancy does not prove the pending requests are unimportant.
+
+Source-version gate for #11: Neon is PostgreSQL 18.6. Before choosing a Supabase target/version and dump tooling, verify cross-version restore compatibility; do not assume a source-18 dump restores unchanged to a lower major version. Rehearse application-schema-only migration against the selected target, leaving managed auth schemas out.
+
+Still open: D1 Supabase ownership/target; D2/D3 real restaurant schedule/capacity; classification/retention of four booking rows; external consumers/integration settings; backups/restore and release/alias obligations. No source retirement or Production cutover is authorized by this access check.
