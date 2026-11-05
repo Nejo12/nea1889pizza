@@ -25,3 +25,109 @@
 }
 .install-app{display:flex;gap:14px;max-width:660px;margin:24px auto;padding:20px;background:#faf7f0;border:1px solid #ded5c2;border-radius:8px;color:#33382e;font-size:12px;line-height:1.6}.install-app img{border-radius:6px;flex-shrink:0}.install-app p{margin:5px 0 10px}.install-app summary{cursor:pointer;text-decoration:underline;color:#65532d}.install-app details p{max-width:520px}.install-app .primary{margin-top:12px}@media(max-width:760px){.install-app{margin:16px;padding:16px}}@media(display-mode:standalone){.install-app{display:none}}
 .login-shell{max-width:520px;margin:40px auto;padding:28px;background:#faf7f0;border:1px solid #ded5c2;border-radius:8px;line-height:1.7}.login-shell h1{font-size:32px;margin-top:18px}.login-shell a{color:#65532d}.login-shell .primary{color:#fff;margin:18px 0}.login-shell label{display:block;margin:18px 0}.login-shell input{display:block;width:100%;padding:12px;margin-top:5px;border:1px solid #c8c3b7;border-radius:4px}.staff-account{display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:12px 24px;background:#eee9dd;font-size:12px}.setup-link{padding:10px;text-align:right;background:#eee9dd}.setup-link a{color:#65532d}@media(max-width:600px){.login-shell{margin:18px 12px;padding:20px}.staff-account{padding:10px}}
+
+
+/* NEA 1889 Saint Gennaro 081 — isolated visual port from approved Lovable direction. */
+.neo-site{--neo-ink:#0e0c07;--neo-gold:#c58c42;--neo-paper:#ede4d8;--neo-red:#a12b29;--neo-blue:#0d437d;min-height:100vh;background:var(--neo-ink);color:var(--neo-paper);font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.65}
+.neo-site *{box-sizing:border-box}
+.neo-site a{color:inherit;text-decoration:none}
+.neo-site a:hover{text-decoration:underline;text-underline-offset:5px}
+.neo-site :is(a,button,input,select,textarea):focus-visible{outline:3px solid var(--neo-gold);outline-offset:4px}
+.neo-site main{max-width:none;margin:0;padding:0}
+.neo-header{height:auto;min-height:96px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px clamp(16px,5vw,76px);background:#0e0c07;color:#ede4d8;border-bottom:1px solid #7c572b;position:relative;z-index:2}
+.neo-brand{display:flex;align-items:center;gap:12px}
+.neo-brand img{width:66px;height:66px;object-fit:contain}
+.neo-brand strong,.neo-footer-wordmark{font-family:Georgia,serif;font-size:32px;line-height:1.1;letter-spacing:.06em}
+.neo-brand em{color:var(--neo-gold);font-style:normal}
+.neo-brand small{display:block;color:#c58c42;font-size:10px;letter-spacing:.22em;margin-top:6px}
+.neo-nav{display:flex;gap:clamp(12px,2.5vw,35px);align-items:center;flex-wrap:wrap}
+.neo-nav a{font-size:12px;text-transform:uppercase;letter-spacing:.13em;font-weight:700}
+.neo-nav .neo-call{color:#d7a761}
+.neo-section{padding:clamp(38px,6vw,96px) clamp(20px,6vw,100px)}
+.neo-kicker{font-size:11px!important;letter-spacing:.22em!important;font-weight:700;color:#c58c42!important;text-transform:uppercase;margin:0 0 24px!important}
+.neo-kicker span{color:#a12b29;margin-right:14px}
+.neo-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(18px,5vw,65px);align-items:center;min-height:680px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 8% 10%,#43311e 0,transparent 38%),repeating-linear-gradient(135deg,transparent 0,transparent 115px,#c58c4214 117px,transparent 119px),#0e0c07}
+.neo-hero h1{font-family:Georgia,serif;font-weight:700;font-size:clamp(72px,11vw,174px);line-height:.88;letter-spacing:-.07em;margin:0;color:#ede4d8}
+.neo-hero h1 span{color:#c58c42}
+.neo-hero-sub{color:#c58c42;font-size:13px;letter-spacing:.35em;margin-top:22px}
+.neo-gold-rule{height:1px;max-width:560px;margin:34px 0;background:linear-gradient(90deg,#c58c42,transparent)}
+.neo-hero h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(26px,3.1vw,48px);line-height:1.22;color:#ede4d8;margin:0 0 22px}
+.neo-hero h2 em,.neo-visit h2 em{color:#c58c42}
+.neo-lead{color:#d9d0c3;max-width:560px;line-height:1.8}
+.neo-actions{display:flex;gap:13px;flex-wrap:wrap;margin:38px 0}
+.neo-button{display:inline-flex;align-items:center;justify-content:space-between;gap:25px;padding:15px 22px;border:1px solid #c58c42;background:#c58c42;color:#0e0c07!important;font-weight:700;letter-spacing:.1em;font-size:12px;text-transform:uppercase;text-decoration:none!important;min-height:48px}
+.neo-button:hover{background:#ede4d8;border-color:#ede4d8}
+.neo-button-outline{background:transparent;color:#c58c42!important}
+.neo-button-outline:hover{color:#0e0c07!important}
+.neo-hero-details{display:flex;gap:20px;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:#bda787;border-top:1px solid #4d3924;padding-top:14px;margin-top:42px}
+.neo-hero-art{min-height:510px;position:relative;display:flex;align-items:end;justify-content:space-between;padding:30px;border:8px solid #160f0a;outline:1px solid #a77940;background:linear-gradient(180deg,transparent 40%,#090906d8),url('/nea-napoli-background.jpeg') center/cover,#0d437d;box-shadow:12px 12px 0 #c58c4222}
+.neo-art-caption{font-family:Georgia,serif;font-size:clamp(48px,7vw,108px);letter-spacing:-.06em;text-shadow:1px 2px 12px #000}
+.neo-art-caption small{display:block;font:10px Arial,sans-serif;letter-spacing:.25em}
+.neo-art-stamp{width:86px;height:95px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:#0e0c07;color:#c58c42;border:0;font:48px Georgia,serif;line-height:1}
+.neo-art-stamp small{font:10px Arial,sans-serif;letter-spacing:.1em;margin-top:4px}
+.neo-story{display:grid;grid-template-columns:1fr 1fr;gap:9%;background:#ede4d8;color:#15100b}
+.neo-story h2,.neo-visit h2{font-family:Georgia,serif;font-size:clamp(39px,5.2vw,80px);line-height:1.05;font-weight:400;letter-spacing:-.04em;margin:0}
+.neo-story h2 span{color:#a12b29}
+.neo-story p:not(.neo-kicker){font-family:Georgia,serif;font-size:clamp(18px,1.75vw,24px);line-height:1.65}
+.neo-script{font:italic 32px Georgia,serif;color:#9f2925}
+.neo-poster-band{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;background:repeating-linear-gradient(75deg,#c58c4212 0,transparent 3px,transparent 92px),#100e0b}
+.neo-poster-band article{border:1px solid #745330;padding:clamp(24px,3vw,50px);min-height:310px;background:linear-gradient(135deg,#22190f 0%,#0e0c07 80%)}
+.neo-poster-band article>span{color:#c58c42;font-size:10px;letter-spacing:.2em}
+.neo-poster-band h2{font-family:Georgia,serif;font-size:clamp(32px,3.6vw,57px);line-height:1.09;margin:38px 0 22px;color:#ede4d8}
+.neo-poster-band p{color:#bbb2a5;max-width:320px}
+.neo-visit{display:grid;grid-template-columns:1fr 1fr;gap:9%;background:#18120e}
+.neo-visit>div>p:not(.neo-kicker){font-size:18px;line-height:1.8;margin:28px 0}
+.neo-visit a:not(.neo-button){color:#d2a467}
+.neo-hours{border:1px solid #765830;padding:clamp(22px,3vw,48px)}
+.neo-hours h3{font:32px Georgia,serif;margin-bottom:24px}
+.neo-hours p{display:flex;justify-content:space-between;gap:24px;border-bottom:1px solid #48392a;padding:12px 0;font-size:13px!important;margin:0!important}
+.neo-hours p:nth-last-of-type(-n+2){display:block;border:0;color:#bfb3a2;line-height:1.7}
+.neo-hours .neo-button{margin-top:20px}
+.neo-footer{padding:45px clamp(20px,6vw,100px);display:flex;justify-content:space-between;gap:35px;background:#090806;border-top:1px solid #745330;color:#ede4d8}
+.neo-footer-wordmark{color:#c58c42}
+.neo-footer p{color:#aaa092;font-size:12px;margin:5px 0}
+.neo-footer nav{display:flex;justify-content:flex-end;align-content:center;gap:20px;flex-wrap:wrap;max-width:500px}
+.neo-footer nav a{font-size:12px}
+.neo-menu-hero{background:linear-gradient(100deg,#0e0c07,#21180e);min-height:390px}
+.neo-menu-hero h1,.neo-booking-story h1,.neo-legal h1{font-family:Georgia,serif;line-height:1.02;font-size:clamp(48px,7vw,104px);letter-spacing:-.055em;margin:0 0 28px;color:#ede4d8}
+.neo-menu-hero h1 span,.neo-booking-story h1 span{color:#c58c42}
+.neo-menu-hero>p:not(.neo-kicker){font:italic 26px Georgia,serif}
+.neo-draft{border-left:3px solid #c58c42;background:#c58c4217;color:#f6e1bd;padding:13px 18px;font-size:13px;line-height:1.5;margin:25px 0;max-width:900px}
+.neo-menu-tabs{display:flex;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:1;padding:14px clamp(20px,6vw,100px);background:#1a140f;border-block:1px solid #5b4228}
+.neo-menu-tabs a{color:#d8bc8f;text-decoration:none;font-size:11px;letter-spacing:.09em;font-weight:700;padding:8px}
+.neo-menu-section{display:grid;grid-template-columns:1fr 1.5fr;gap:8%;border-bottom:1px solid #4a3420;scroll-margin-top:95px}
+.neo-menu-section:nth-child(even){background:#19120d}
+.neo-menu-heading span{color:#c58c42;font-size:11px;letter-spacing:.2em}
+.neo-menu-heading h2{font:clamp(35px,4.3vw,64px)/1.05 Georgia,serif;margin:20px 0}
+.neo-menu-heading p{color:#bda88b;font-style:italic;font-family:Georgia,serif;font-size:20px}
+.neo-menu-item{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:22px 0;border-bottom:1px solid #58432b}
+.neo-menu-item h3{font:26px Georgia,serif;color:#ede4d8;margin:0 0 7px}
+.neo-menu-item p{color:#bcb0a1;font-size:14px;margin:0}
+.neo-menu-item>span{color:#c58c42;white-space:nowrap;font-size:12px}
+.neo-allergen-note{color:#d2aa75;font-size:12px;margin-top:30px}
+.neo-menu-end{text-align:center;background:#a12b29}
+.neo-menu-end h2{font:clamp(32px,5vw,66px) Georgia,serif;color:#fff}
+.neo-booking-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:8%;background:radial-gradient(circle at top left,#302116,#0e0c07 60%)}
+.neo-booking-story>p:not(.neo-kicker){max-width:470px;color:#d3c5b4;line-height:1.8}
+.neo-booking-story .neo-script{color:#c58c42}
+.neo-booking-story a{color:#d6a85e}
+.neo-booking-facts{display:flex;flex-direction:column;gap:8px;margin:50px 0;color:#d9af6b;font-size:11px;letter-spacing:.2em}
+.neo-booking-form{background:#ede4d8;color:#15110c;padding:clamp(21px,3vw,46px);box-shadow:12px 12px 0 #c58c4222}
+.neo-booking-form h2{font:44px Georgia,serif;color:#15110c;margin:5px 0}
+.neo-booking-form .neo-kicker{color:#a12b29!important}
+.neo-booking-form .primary{background:#a12b29;border-color:#a12b29;color:white}
+.neo-booking-form :is(input,select,textarea){color:#21170f;background:#fffdf8;border-color:#a89579}
+.neo-booking-form label{color:#2c2118}
+.neo-booking-form .slots button.chosen{background:#a12b29!important;color:white!important;border-color:#a12b29}
+.neo-booking-form .form-note,.neo-booking-form .under-button{color:#625347}
+.neo-booking-form .success{color:#1b1b1b}
+.neo-booking-form .success a{color:#6c231f}
+.neo-legal{background:#17110d;max-width:none;min-height:65vh}
+.neo-legal>*{max-width:800px}
+.neo-legal h2{font:30px Georgia,serif;color:#d7a460;margin:36px 0 14px}
+.neo-legal p:not(.neo-kicker){line-height:1.9;color:#ded1c0}
+.neo-legal a{color:#d6a15a}
+.neo-legal .neo-draft{max-width:800px}
+@media(max-width:900px){.neo-hero,.neo-story,.neo-visit,.neo-booking-layout,.neo-menu-section{grid-template-columns:1fr}.neo-hero-art{min-height:380px}.neo-poster-band{grid-template-columns:1fr}.neo-menu-section{gap:12px}.neo-footer{flex-direction:column}.neo-footer nav{justify-content:flex-start}}
+@media(max-width:600px){.neo-header{flex-direction:column;align-items:flex-start;padding:14px 18px;gap:15px}.neo-brand img{width:52px;height:52px}.neo-brand strong{font-size:25px}.neo-nav{width:100%;gap:16px;justify-content:space-between}.neo-nav a{font-size:10px}.neo-nav .neo-call{display:none}.neo-section{padding:44px 20px}.neo-hero{min-height:0}.neo-hero-art{min-height:290px}.neo-art-caption{font-size:50px}.neo-art-stamp{width:65px;height:75px;font-size:34px}.neo-actions{flex-direction:column}.neo-button{width:100%}.neo-hero-details{font-size:8px}.neo-menu-tabs{position:relative;padding:12px}.neo-menu-item{flex-direction:column;gap:4px}.neo-booking-form{padding:20px}.neo-footer nav{gap:14px}}
+@media(prefers-reduced-motion:reduce){.neo-site *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

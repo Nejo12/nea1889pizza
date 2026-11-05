@@ -1,0 +1,6 @@
+
+import Link from 'next/link';
+import type {ReactNode} from 'react';
+export function NeoHeader(){return <header className="neo-header"><Link className="neo-brand" href="/" aria-label="NEA 1889 – Startseite"><img src="/nea-logo.png" alt="" width={66} height={66}/><span><strong>NEA <em>1889</em></strong><small>NAPOLI · BERLIN</small></span></Link><nav className="neo-nav" aria-label="Hauptnavigation"><Link href="/speisekarte">Speisekarte</Link><Link href="/reservierung">Reservieren</Link><a href="tel:+493098465557" className="neo-call">030 984 655 57</a></nav></header>}
+export function NeoFooter(){return <footer className="neo-footer"><div><span className="neo-footer-wordmark">NEA 1889</span><p>BERLIN — NAPOLI — SEMPRE.</p><p>Zimmerstraße 26/27 · 10969 Berlin</p></div><nav aria-label="Fußnavigation"><Link href="/speisekarte">Speisekarte</Link><Link href="/reservierung">Reservieren</Link><Link href="/impressum">Impressum</Link><Link href="/datenschutz">Datenschutz</Link><Link href="/admin">Restaurant-Login</Link></nav></footer>}
+export default function NeoChrome({children}:{children:ReactNode}){return <div className="neo-site"><NeoHeader/><main id="content">{children}</main><NeoFooter/></div>}

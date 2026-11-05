@@ -2,7 +2,7 @@
  "id":"/", "name":"NEA 1889 · Reservierungen", "short_name":"NEA 1889",
  "description":"Tisch anfragen und Reservierungen bei NEA 1889 verwalten.",
  "lang":"de", "start_url":"/", "scope":"/", "display":"standalone",
- "background_color":"#f1ebdf", "theme_color":"#202923",
+ "background_color":"#0e0c07", "theme_color":"#0e0c07",
  "icons":[{"src":"/icons/nea-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"/icons/nea-512.png","sizes":"512x512","type":"image/png","purpose":"any"}],
  "shortcuts":[{"name":"Restaurant-Login","url":"/admin"}]
 }
