@@ -1,5 +1,7 @@
 # Issue #21 — Lovable integration preparation (2026-11-06)
 
+> **Superseded in part (2026-11-06):** the Founder decided that this Next.js application is the canonical runtime and the Lovable project is a design/reference source. The frontend is ported here (see `docs/frontend-migration.md`); the "generated copy in the Lovable repo" mechanism below is no longer the plan. Kept for its findings (strict TypeScript, Workers connection handling, pooler test plan).
+
 Refs #21, builds on #23 (merged, runtime proof). No Production, DNS, Supabase, Lovable-`main` or provider change. Nothing here mounts a route or alters the live reservation UI.
 
 ## Decision: single source here, generated copy there

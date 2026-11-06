@@ -16,6 +16,11 @@ As of 2026-11-06:
 - Do not create or attach backend work to ad-hoc Vercel projects. Any future Vercel application runtime must be explicitly approved as the single canonical runtime before cutover.
 - Never move `nea1889.pizza`, change DNS, promote a deployment, or replace Production backend configuration without explicit Founder approval.
 
+## Production hosting vs proposed deployment
+
+- **Production today:** Lovable serves `nea1889.pizza` (demo, browser-local reservations). Unchanged.
+- **Proposed:** this repository's Next.js application becomes the single canonical product (approved Lovable UI ported in, Supabase-backed booking API unchanged). The host is not chosen and nothing is deployed; cutover requires explicit Founder authorization. Details and remaining work: `docs/frontend-migration.md`.
+
 ## Approved target architecture
 
 The completion target is:
