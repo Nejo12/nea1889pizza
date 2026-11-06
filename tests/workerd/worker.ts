@@ -25,6 +25,18 @@ export default {
    const who=await database().prepare('SELECT current_user AS u, current_setting(\'search_path\') AS p').first<{u:string;p:string}>();
    return json({...out,user:who?.u,searchPath:who?.p});
   }
+  if(url.pathname==='/probe/info'){
+   const r=await database().prepare("SELECT current_user AS \"user\", current_setting('search_path') AS \"searchPath\", current_setting('statement_timeout') AS \"statementTimeout\"").first<Record<string,unknown>>();
+   return json(r);
+  }
+  if(url.pathname==='/probe/sleep'){
+   try{await database().prepare('SELECT pg_sleep(20)').all();return json({cancelled:false});}catch{return json({cancelled:true});}
+  }
+  if(url.pathname==='/probe/ping'){
+   // Diagnostic only: the adapter deliberately hides driver errors from guests; this exposes the class/code, never the URL.
+   try{const r=await database().prepare('SELECT 1 AS ok').first();return json({ok:true,r});}
+   catch(e){const x=e as {name?:string;code?:string;message?:string};return json({ok:false,name:x.name,code:x.code,message:String(x.message).replace(/postgres(ql)?:\/\/\S+/g,'<url>')},500);}
+  }
   if(url.pathname==='/probe/runtime')return json({ua:navigator.userAgent,hasProcessEnv:typeof process!=='undefined'&&!!process.env.DATABASE_URL});
   return new Response('not found',{status:404});
  }
