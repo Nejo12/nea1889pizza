@@ -11,12 +11,12 @@ export async function POST(req:Request){
  try{
   if(Number(req.headers.get('content-length')||0)>12000)return reply({error:'Anfrage zu groß.'},413);
   const raw=await req.json() as Record<string,unknown>;
-  if(!raw||typeof raw!=='object'||raw.website)return reply({error:'Ungültige Anfrage.'},400);
+  if(!raw||typeof raw!=='object'||raw['website'])return reply({error:'Ungültige Anfrage.'},400);
   const key=z.object({requestId:z.string().uuid(),token:tokenSchema}).safeParse(raw);if(!key.success)return reply({error:'Bitte Formular neu öffnen.'},400);
   const db=database();const digest=await hashToken(key.data.token);
   const existing=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(key.data.requestId).first<Booking>();
   if(existing)return existing.token_hash===digest?reply(publicBooking(existing)):reply({error:'Bitte Formular neu öffnen.'},409);
-  const parsed=reservationSchema().safeParse(raw);if(!parsed.success||raw.accepted!==true)return reply({error:'Bitte Angaben, Datenschutzhinweis und einen zukünftigen Termin prüfen.'},400);
+  const parsed=reservationSchema().safeParse(raw);if(!parsed.success||raw['accepted']!==true)return reply({error:'Bitte Angaben, Datenschutzhinweis und einen zukünftigen Termin prüfen.'},400);
   const d=parsed.data;
   const limit=await db.prepare("SELECT COUNT(*) AS n FROM bookings WHERE email=? AND created>? AND status='pending'").bind(d.email,new Date(Date.now()-86400000).toISOString()).first<{n:number}>();
   if(limit&&limit.n>=5)return reply({error:'Mehrere offene Anfragen vorhanden. Bitte das Restaurant direkt kontaktieren.'},429);
