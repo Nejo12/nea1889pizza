@@ -45,7 +45,7 @@ Router conversion: `createFileRoute`/`head` → page `metadata`; `Link to=` → 
 ### Intentional differences from the live Lovable UI (need Founder confirmation)
 
 1. **Opening hours** come from `lib/reservation-rules.ts` (owner-supplied: Sun–Fri 11:30–21:30, Sat 15:30–22:00, last arrival 21:00/21:30), not the Lovable placeholders (Pranzo/Cena, Monday closed). The home "Orari" card now shows these and the Monday row is gone.
-2. The Pranzo/Cena shift toggle and the "few/full" slot states are removed: no availability endpoint exists yet, so only opening-hours and past-time states are shown.
+2. The Pranzo/Cena shift toggle and all simulated capacity labels (available/few/full) are removed (Founder-approved). Selectable times show only their table window ("bis HH:MM") and make no claim about table availability; past times are disabled and labelled. Availability is decided by the server on submit.
 3. Demo wording (`r.demo`, `c.noMail`, `c.number`, `f.submit`, …) updated in all six languages to describe the real flow. New keys: hours, status-link and copy-link strings.
 4. "Staff Login" links to the existing `/login`.
 
@@ -58,7 +58,7 @@ Router conversion: `createFileRoute`/`head` → page `metadata`; `Link to=` → 
 ## Remaining work, in dependency order
 
 1. **Guest status page** (`/reservation`) in the new design (still legacy styling), plus German-only server error messages → localized.
-2. **Availability endpoint** (`GET`, server-side, read-only) so the wizard can show full/few states; then CORS/Origin check and rate limiting (#13).
+2. **Availability endpoint** (`GET`, server-side, read-only) so the wizard could (if the Founder wants) show real availability; then CORS/Origin check and rate limiting (#13).
 3. **Supabase Auth** (#12) replacing Clerk; then port the staff/admin UI to the approved design (#14). `/login` and `/admin` remain legacy until then.
 4. **Resend** transactional email (#19); the confirmation screen says no automatic email is sent until then.
 5. **Legal/privacy review**: Impressum/Datenschutz still contain `[placeholders]` from the Lovable source, and the site loads Google Fonts from Google's servers (not disclosed in the privacy text; consider self-hosting).

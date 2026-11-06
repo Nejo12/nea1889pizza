@@ -176,7 +176,7 @@ export default function ReservationPage() {
                   <button key={slot} type="button" disabled={!open} onClick={() => setTime(slot)} aria-pressed={time === slot}
                     className={`border border-ochre/60 px-2 py-3 text-left ${time === slot ? "bg-blood text-plaster" : open ? "bg-card hover:bg-ochre hover:text-soot" : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"}`}>
                     <span className="block font-display text-2xl">{slot}</span>
-                    <span className="block text-xs">{t("r.until")} {tableEndTime(slot)} · {t(open ? "st.available" : "st.past")}</span>
+                    <span className="block text-xs">{t("r.until")} {tableEndTime(slot)}{open ? "" : ` · ${t("st.past")}`}</span>
                   </button>
                 ))}
               </div>

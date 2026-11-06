@@ -24,6 +24,13 @@ test('reservation wizard submits to the authoritative API with an idempotency ke
   assert.ok(!/localStorage|loadReservations|saveReservations/.test(src));
 });
 
+test('selectable slots make no availability claim and all languages stay in sync',()=>{
+  const dict=fs.readFileSync('lib/site/i18n-dict.ts','utf8');
+  assert.ok(!/"st\.(available|few|full)"/.test(dict),'simulated availability labels must not exist');
+  assert.ok(!/st\.available|st\.few|st\.full/.test(fs.readFileSync('app/(site)/reservierung/view.tsx','utf8')));
+  for(const key of ['st.past','r.noSlots','c.pending','r.demo','c.noMail'])assert.equal(dict.split(`"${key}"`).length-1,6,`${key} must exist once per language`);
+});
+
 test('every /brochure asset referenced by the site exists in public/',()=>{
   const refs=new Set();
   for(const f of siteFiles)for(const m of fs.readFileSync(f,'utf8').matchAll(/["'`]\/brochure\/([^"'`]+)["'`]/g))refs.add(m[1]);
