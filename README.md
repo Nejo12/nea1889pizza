@@ -1,40 +1,83 @@
 # NEA 1889
 
-Restaurant reservation app with a public booking form, personal reservation status and cancellation, and a staff management panel.
+NEA 1889 is the restaurant website and reservation platform for **https://nea1889.pizza**.
 
-## Canonical deployment rule
+## Canonical product and hosting rule
 
-The canonical public product is **https://nea1889.pizza** and its approved visual source is the Founder-owned Lovable implementation.
+The canonical public product is **https://nea1889.pizza**. Its approved visual implementation is the Founder-owned Lovable version currently serving the live domain.
 
 As of 2026-11-06:
 
-- `nea1889.pizza` is served by Lovable. Vercel manages the domain/DNS only; do not change the Lovable A/TXT records or production routing without explicit Founder approval.
+- `nea1889.pizza` is served by Lovable.
+- Vercel manages the domain/DNS only. Do not change the Lovable A/TXT records or production routing without explicit Founder approval.
 - The dedicated Supabase backend target is `nea1889Pizza` / `amfaldeqkqqovfggayoj` in Frankfurt (`eu-central-1`).
-- Do not create, reuse, or connect backend services to ad-hoc Vercel test projects. There must be one explicitly approved canonical Vercel application project before any future Vercel runtime cutover.
-- `nea-1889-reservations` and `nea-pizza-1889-preview` are obsolete test projects approved for deletion and must not be used again.
-- `saint-gennaro-081` is an old editorial preview and is **not** the canonical NEA 1889 product. Do not use it for backend/runtime work unless the Founder explicitly re-authorizes it.
-- Never move `nea1889.pizza`, change DNS, promote a Vercel deployment, or replace Production backend configuration without explicit Founder approval.
+- Obsolete Vercel test projects `nea-1889-reservations` and `nea-pizza-1889-preview` were deleted on 2026-11-06 and must not be recreated or reused.
+- `saint-gennaro-081` is an old editorial preview and is **not** the canonical NEA 1889 product.
+- Do not create or attach backend work to ad-hoc Vercel projects. Any future Vercel application runtime must be explicitly approved as the single canonical runtime before cutover.
+- Never move `nea1889.pizza`, change DNS, promote a deployment, or replace Production backend configuration without explicit Founder approval.
 
-This rule takes precedence over older deployment notes in the repository.
+## Approved target architecture
 
-## Stack and migration direction
+The completion target is:
 
-The current repository uses Next.js, React and TypeScript. The backend migration is replacing Neon PostgreSQL and Clerk with Supabase PostgreSQL and Supabase Auth while preserving database-authoritative reservation integrity.
+- **Frontend / public experience:** the current approved Lovable implementation on `nea1889.pizza`.
+- **Database:** Supabase PostgreSQL. Reservation state must be server-authoritative; browser `localStorage` must not be the booking database.
+- **Staff authentication:** Supabase Auth, replacing Clerk.
+- **Reservation integrity:** PostgreSQL transactions/constraints remain the final authority for availability, confirmation and occupancy conflicts.
+- **Email:** Resend is the approved transactional email provider. It will support reservation/customer messages and production Supabase Auth email delivery using the appropriate server-side/API or SMTP integration.
+- **Future mobile notifications:** client mobile notifications are part of the product roadmap, but the exact channel/provider (for example SMS and/or push) is intentionally undecided until a separate design/privacy/cost task is approved.
 
-The approved visual experience comes from Lovable. Do not substitute legacy Vercel test designs for the approved Lovable product.
+Neon and Clerk are legacy providers being replaced. Do not build new product dependencies on them.
 
-## Work together
+## Delivery sequence
 
-Use this repository for source code, issues and the active roadmap. Make changes on a branch and open a pull request for review before merging into `main`.
+The active roadmap is tracked in GitHub Issues. Work remains bounded and ordered:
 
-The Founder alone decides when a pull request is merged. Do not enable auto-merge or push directly to `main`.
+1. Complete and merge the reviewed Supabase database foundation.
+2. Replace Clerk with Supabase Auth.
+3. Wire the approved Lovable reservation flow to real Supabase-backed server APIs; remove localStorage as booking authority.
+4. Wire the approved staff/admin experience to the same authoritative backend.
+5. Add Resend transactional email and Supabase Auth delivery.
+6. Run release, privacy, concurrency, responsive, accessibility and end-to-end verification.
+7. Retire remaining Neon/Clerk dependencies only after the replacement is verified.
+8. Design mobile client notifications as a later feature; do not block V1 completion on that future channel.
+
+## Repository workflow
+
+Use this repository for source code, issues and the active roadmap.
+
+- Work on feature branches.
+- Open pull requests targeting `main`.
+- Never push directly to `main`.
+- Never enable auto-merge.
+- Only the Founder decides and performs merges.
+- No Production/DNS/provider retirement changes without explicit Founder authorization.
+- Keep credentials, customer data and auth exports out of the repository.
+
+See `AGENTS.md` for the version-controlled engineering and agent rules.
 
 ## Local development
 
-Use Node.js 24. Run `npm ci`, copy `.env.example` to `.env.local`, configure development credentials privately, then run `npm run dev`. Never commit secrets.
+Use Node.js 24.
 
-Checks: `npm test`, `npm run typecheck`, `npm run build`.
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+Never commit secrets.
+
+Primary checks:
+
+```bash
+npm test
+npm run typecheck
+npm run build
+```
 
 ## Current status
 
-Supabase PostgreSQL migration work is tracked in the active roadmap. Production routing remains on the approved Lovable site until an explicit cutover decision is made.
+Supabase PostgreSQL foundation work is in PR #17. The Frankfurt application migration has been applied and verified, but PR #17 remains unmerged and the runtime cutover has not occurred.
+
+The live public site remains the approved Lovable deployment on `nea1889.pizza`.
