@@ -13,6 +13,7 @@
     "test": "node --test tests/*.test.cjs",
     "typecheck": "tsc --noEmit",
     "test:workerd": "node --test tests/workerd/runtime.mjs",
+    "test:workerd:preview": "node --env-file=.env.preflight --test tests/workerd/runtime.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "db:import": "node scripts/import-sites.mjs",
     "db:local": "npx --yes supabase@3.0.0 db start",
