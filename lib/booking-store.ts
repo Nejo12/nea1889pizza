@@ -9,9 +9,15 @@ export async function updateBooking(id:string,status:string,tableIds:string[]){
  const occupied=['confirmed','arrived'].includes(status);
  const valid=[...new Set(tableIds)];
  if(occupied){if(!valid.length||valid.some(id=>!restaurantTables.some(t=>t.name===id)))throw Error('Bitte gültige Tische auswählen.');const seats=valid.reduce((n,id)=>n+restaurantTables.find(t=>t.name===id)!.seats,0);if(seats<b.guests)throw Error('Die ausgewählten Tische haben zu wenige Plätze.');}
- const commands=[db.prepare('DELETE FROM occupancy WHERE booking_id=?').bind(id)];
- if(occupied)for(const slot of slotKeys(b.date,b.time,valid))commands.push(db.prepare('INSERT INTO occupancy (id,booking_id,table_id,date,minute) VALUES (?,?,?,?,?)').bind(slot.id,id,slot.tableId,slot.date,slot.minute));
- commands.push(db.prepare('UPDATE bookings SET status=?,table_ids=?,updated=? WHERE id=?').bind(status,JSON.stringify(occupied?valid:[]),new Date().toISOString(),id));
+ // Every statement is guarded by the booking state that was validated above. If staff edited or
+ // cancelled the booking in the meantime, nothing is written and the stale change is rejected.
+ const unchanged="EXISTS (SELECT 1 FROM bookings WHERE id=? AND status=? AND date=? AND time=? AND guests=? AND updated=?)";
+ const state=[id,b.status,b.date,b.time,b.guests,b.updated] as const;
+ const commands=[db.prepare('DELETE FROM occupancy WHERE booking_id=? AND '+unchanged).bind(id,...state)];
+ if(occupied)for(const slot of slotKeys(b.date,b.time,valid))commands.push(db.prepare('INSERT INTO occupancy (id,booking_id,table_id,date,minute) SELECT ?,?,?,?,? WHERE '+unchanged).bind(slot.id,id,slot.tableId,slot.date,slot.minute,...state));
+ commands.push(db.prepare('UPDATE bookings SET status=?,table_ids=?,updated=? WHERE id=? AND status=? AND date=? AND time=? AND guests=? AND updated=?').bind(status,JSON.stringify(occupied?valid:[]),new Date().toISOString(),id,b.status,b.date,b.time,b.guests,b.updated));
  // PostgreSQL transaction is atomic; unique occupancy keys reject overlapping confirmations.
- try{await db.batch(commands)}catch{throw Error('Änderung nicht gespeichert. Ein Tisch ist möglicherweise bereits belegt. Bitte neu laden und prüfen.');}
+ let results;
+ try{results=await db.batch(commands)}catch{throw Error('Änderung nicht gespeichert. Ein Tisch ist möglicherweise bereits belegt. Bitte neu laden und prüfen.');}
+ if(!results.at(-1)?.meta.changes)throw Error('Die Reservierung wurde zwischenzeitlich geändert. Bitte neu laden und prüfen.');
 }

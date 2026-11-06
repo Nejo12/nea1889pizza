@@ -13,7 +13,9 @@
     "test": "node --test tests/*.test.cjs",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/migrate.mjs",
-    "db:import": "node scripts/import-sites.mjs"
+    "db:import": "node scripts/import-sites.mjs",
+    "db:local": "npx --yes supabase@3.0.0 db start",
+    "db:reset": "npx --yes supabase@3.0.0 db reset --local"
   },
   "dependencies": {
     "@clerk/backend": "3.26.1",

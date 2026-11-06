@@ -1,17 +1,18 @@
 import postgres from 'postgres';
 import {readFile} from 'node:fs/promises';
 const [file]=process.argv.slice(2);
-if(!file||!process.env.DATABASE_URL)throw Error('Provide a private export JSON path and DATABASE_URL.');
-const schema=process.env.NEA_DATABASE_SCHEMA;
-if(!schema||!/^[a-z][a-z0-9_]{0,62}$/.test(schema))throw Error('NEA_DATABASE_SCHEMA required.');
+if(!file||!process.env.MIGRATION_DATABASE_URL)throw Error('Provide a private export JSON path and MIGRATION_DATABASE_URL (migration identity, direct connection).');
+const schema=process.env.NEA_DATABASE_SCHEMA||'nea';
+if(!/^[a-z][a-z0-9_]{0,62}$/.test(schema))throw Error('Invalid NEA_DATABASE_SCHEMA.');
 const data=JSON.parse(await readFile(file,'utf8'));
 const columns={bookings:['id','token_hash','name','email','phone','date','time','guests','notes','status','table_ids','duration','created','updated'],blocked_days:['id','owner','date'],occupancy:['id','booking_id','table_id','date','minute'],reservations:['id','owner','name','email','phone','date','time','guests','notes','status','created']};
 for(const [name,keys]of Object.entries(columns)){
  if(!Array.isArray(data[name]))throw Error('Missing export table: '+name);
  for(const row of data[name])if(keys.some(k=>row[k]===undefined))throw Error('Incomplete row in '+name);
 }
-const sql=postgres(process.env.DATABASE_URL,{max:1,prepare:false,connection:{search_path:schema}});
+const sql=postgres(process.env.MIGRATION_DATABASE_URL,{max:1,prepare:false});
 try{await sql.begin(async tx=>{
+ await tx.unsafe(`SET LOCAL search_path TO "${schema}"`);
  await tx`SELECT pg_advisory_xact_lock(hashtext(${schema}))`;
  for(const [name,keys]of Object.entries(columns))for(const row of data[name]){
   const previous=await tx.unsafe(`SELECT * FROM "${name}" WHERE id=$1`,[row.id]);
