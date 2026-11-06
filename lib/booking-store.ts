@@ -1,9 +1,23 @@
 import {database} from './staff';
-import {restaurantTables,maxTableMinutes} from './reservation-rules';
+import {restaurantTables,maxTableMinutes,slotsForDate,isFutureSlot} from './reservation-rules';
 export type Booking={id:string;token_hash:string;name:string;email:string;phone:string;date:string;time:string;guests:number;notes:string;status:string;table_ids:string;duration:number;created:string;updated:string};
 export async function hashToken(token:string){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 export function publicBooking(b:Booking){return {id:b.id,name:b.name,date:b.date,time:b.time,guests:b.guests,status:b.status,duration:b.duration,updated:b.updated};}
 export function slotKeys(date:string,time:string,tables:string[]){const start=Number(time.slice(0,2))*60+Number(time.slice(3));return tables.flatMap(tableId=>Array.from({length:maxTableMinutes/15},(_,i)=>({id:`${date}:${tableId}:${start+i*15}`,tableId,date,minute:start+i*15})));}
+export type SlotStatus='available'|'full'|'past'|'closed';
+// Read-only and ADVISORY. Mirrors updateBooking's rules (same occupancy keys, tables are combined by summing seats) without
+// holding or writing anything: pending requests occupy nothing, and only confirmation can actually claim tables.
+export async function availabilityFor(date:string,guests:number,now=new Date()):Promise<{time:string;status:SlotStatus}[]>{
+ const db=database();
+ const closed=!!await db.prepare("SELECT 1 AS x FROM blocked_days WHERE owner='nea-1889' AND date=?").bind(date).first();
+ const taken=new Set((await db.prepare('SELECT table_id,minute FROM occupancy WHERE date=?').bind(date).all()).results.map(r=>`${r['table_id']}:${r['minute']}`));
+ return slotsForDate(date).map(time=>{
+  if(!isFutureSlot(date,time,now))return {time,status:'past' as const};
+  if(closed)return {time,status:'closed' as const};
+  const seats=restaurantTables.filter(t=>slotKeys(date,time,[t.name]).every(k=>!taken.has(`${k.tableId}:${k.minute}`))).reduce((n,t)=>n+t.seats,0);
+  return {time,status:seats>=guests?'available' as const:'full' as const};
+ });
+}
 export async function updateBooking(id:string,status:string,tableIds:string[]){
  const db=database();const b=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(id).first<Booking>();if(!b)throw Error('Reservierung nicht gefunden.');
  const occupied=['confirmed','arrived'].includes(status);
