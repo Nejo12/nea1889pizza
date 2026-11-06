@@ -36,3 +36,16 @@ test('Supabase config: Data API off, application schema never exposed, pinned CL
  assert.doesNotMatch(fs.readFileSync('package.json','utf8'),/supabase@(?!3\.0\.0)/);
 });
 function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):/\.(tsx?|mjs)$/.test(e.name)?[path.join(d,e.name)]:[]);}
+test('Cloudflare Workers: no connection survives an operation (cross-request I/O is forbidden there); Node keeps one pool',async()=>{
+ const run=async ua=>{
+  const saved=Object.getOwnPropertyDescriptor(globalThis,'navigator');Object.defineProperty(globalThis,'navigator',{value:{userAgent:ua},configurable:true});
+  let opened=0,ended=0;process.env.DATABASE_URL='postgresql://nea_runtime:pw@127.0.0.1:54522/postgres';process.env.NEA_DATABASE_SCHEMA='nea';
+  try{
+   const a=load('lib/database.ts',{postgres:(_u,o)=>{opened++;const sql=()=>[];sql.opts=o;sql.end=async()=>{ended++};sql.begin=async fn=>fn(Object.assign(()=>[],{unsafe:async()=>[]}));return sql;}});
+   await a.database().prepare('SELECT 1').first();await a.database().prepare('SELECT 2').first();await a.database().batch([a.database().prepare('SELECT 3')]);
+  }finally{saved?Object.defineProperty(globalThis,'navigator',saved):delete globalThis.navigator;}
+  return {opened,ended};
+ };
+ assert.deepEqual(await run('Cloudflare-Workers'),{opened:3,ended:3});
+ assert.deepEqual(await run('Node.js/24'),{opened:1,ended:0});
+});
