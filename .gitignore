@@ -6,3 +6,4 @@ node_modules/
 *.tsbuildinfo
 private-data/
 .wrangler/
+.dev.vars
