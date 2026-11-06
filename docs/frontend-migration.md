@@ -30,7 +30,7 @@ Until cutover, the Lovable site remains Production. The Next.js site ships `robo
 | Styles / tokens | `src/styles.css` (Tailwind v4) | `app/(site)/site.css` |
 | Images | `*.asset.json` pointers to Lovable CDN | downloaded from the public site, size-verified, in `public/brochure/` (only the files in use) |
 
-Router conversion: `createFileRoute`/`head` → page `metadata`; `Link to=` → `next/link`; active nav state via `usePathname`. Route groups give each area its own root layout and CSS: `app/(site)` (Tailwind, public design) and `app/(legacy)` (existing `globals.css`, staff `/login`, `/admin`, guest status page `/reservation`). URLs are unchanged.
+Router conversion: `createFileRoute`/`head` → page `metadata`; `Link to=` → `next/link`; active nav state via `usePathname`. Route groups give each area its own root layout and CSS: `app/(site)` (Tailwind, public design) and `app/(legacy)` (existing `globals.css`, staff `/login`, `/admin`). URLs are unchanged.
 
 ## Deliberately not ported
 
@@ -57,7 +57,7 @@ Router conversion: `createFileRoute`/`head` → page `metadata`; `Link to=` → 
 
 ## Remaining work, in dependency order
 
-1. **Guest status page** (`/reservation`) in the new design (still legacy styling), plus German-only server error messages → localized.
+1. ~~Guest status page (`/reservation`) in the new design, localized server errors~~ — done: `app/(site)/reservation`, structured `code` on `/api/booking` errors (`BOOKING_ERRORS` in `lib/reservation-rules.ts`, German `error` text kept for compatibility), six-language `rs.*`/`err.*` keys, `tests/guest-status.test.cjs`.
 2. **Availability endpoint** (`GET`, server-side, read-only) so the wizard could (if the Founder wants) show real availability; then CORS/Origin check and rate limiting (#13).
 3. **Supabase Auth** (#12) replacing Clerk; then port the staff/admin UI to the approved design (#14). `/login` and `/admin` remain legacy until then.
 4. **Resend** transactional email (#19); the confirmation screen says no automatic email is sent until then.
