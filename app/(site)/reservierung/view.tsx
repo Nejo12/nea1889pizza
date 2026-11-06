@@ -10,6 +10,7 @@ import { Calendar } from "@/components/site/calendar";
 import { secureId } from "@/lib/client-id";
 import { berlinClock, isFutureSlot, maxTableMinutes, slotsForDate, tableEndTime } from "@/lib/reservation-rules";
 import { icsFor } from "@/lib/site/ics";
+import { errorKey } from "@/lib/guest-status";
 
 // The booking itself is server-authoritative: this wizard only collects input and POSTs it to /api/booking.
 // Slot availability shown here is advisory (opening hours and past times); the server revalidates everything.
@@ -75,15 +76,19 @@ export default function ReservationPage() {
           guests, date: dateKey, time, website: "", accepted: form.consent,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; name?: string; date?: string; time?: string; guests?: number };
-      if (!res.ok || !data.date || !data.time) throw new Error(data.error || t("e.send"));
+      const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string; name?: string; date?: string; time?: string; guests?: number };
+      if (!res.ok || !data.date || !data.time) {
+        // Localize by the API's structured code; the German `error` text is only a compatibility fallback.
+        setErrors({ form: t(data.code || data.error ? errorKey(data) : "e.send") });
+        return;
+      }
       setDone({
         name: data.name ?? form.name, date: data.date, time: data.time, guests: data.guests ?? guests,
         requestId: key.current.requestId, link: `${location.origin}/reservation#${key.current.token}`,
       });
       setStep(4);
-    } catch (e) {
-      setErrors({ form: e instanceof Error ? e.message : t("e.send") });
+    } catch {
+      setErrors({ form: t("e.send") });
     } finally {
       sending.current = false;
       setBusy(false);

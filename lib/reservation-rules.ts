@@ -51,3 +51,18 @@ export function reservationSchema(now = new Date()) {
 export const blockSchema = z.object({action:z.enum(['block','unblock']),date:z.string().refine(isRealDate)});
 export const statusSchema = z.object({id:z.string().uuid(),status:z.enum(['pending','confirmed','arrived','cancelled','noshow'])});
 export function confirmedParty<T extends {status:string}>(rows:T[]) {return rows.filter(r => r.status === 'confirmed' || r.status === 'arrived');}
+// Structured booking API errors: a stable `code` for localization plus the German text kept for compatibility.
+export const BOOKING_ERRORS = {
+  not_found: {status: 404, message: 'Reservierung nicht gefunden. Bitte den vollständigen persönlichen Link öffnen.'},
+  unavailable: {status: 503, message: 'Status gerade nicht verfügbar. Bitte erneut versuchen.'},
+  too_large: {status: 413, message: 'Anfrage zu groß.'},
+  invalid_request: {status: 400, message: 'Ungültige Anfrage.'},
+  reopen_form: {status: 400, message: 'Bitte Formular neu öffnen.'},
+  invalid_details: {status: 400, message: 'Bitte Angaben, Datenschutzhinweis und einen zukünftigen Termin prüfen.'},
+  too_many_pending: {status: 429, message: 'Mehrere offene Anfragen vorhanden. Bitte das Restaurant direkt kontaktieren.'},
+  day_closed: {status: 409, message: 'An diesem Tag werden keine neuen Anfragen angenommen.'},
+  save_failed: {status: 503, message: 'Speicherung nicht bestätigt. Bitte erneut versuchen; dieselbe Anfrage wird nicht doppelt angelegt.'},
+  cannot_modify: {status: 409, message: 'Bitte das Restaurant direkt kontaktieren, um diese Reservierung zu ändern.'},
+  cancel_failed: {status: 503, message: 'Stornierung nicht bestätigt. Bitte erneut laden.'},
+} as const;
+export type BookingErrorCode = keyof typeof BOOKING_ERRORS;
