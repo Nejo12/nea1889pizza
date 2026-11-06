@@ -1,0 +1,12 @@
+{
+  "name": "nea-runtime-proof",
+  "main": "worker.ts",
+  "compatibility_date": "2026-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "alias": {
+    "@/lib/staff": "./staff-shim.ts",
+    "./staff": "./staff-shim.ts",
+    "@/lib/booking-store": "../../lib/booking-store.ts",
+    "@/lib/reservation-rules": "../../lib/reservation-rules.ts"
+  }
+}
