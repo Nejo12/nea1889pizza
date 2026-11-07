@@ -23,13 +23,15 @@ export async function POST(req:Request){
   if(existing)return existing.token_hash===digest?reply(publicBooking(existing)):fail('reopen_form',409);
   const parsed=reservationSchema().safeParse(raw);if(!parsed.success||raw['accepted']!==true)return fail('invalid_details');
   const d=parsed.data;
-  const limit=await db.prepare("SELECT COUNT(*) AS n FROM bookings WHERE email=? AND created>? AND status='pending'").bind(d.email,new Date(Date.now()-86400000).toISOString()).first<{n:number}>();
-  if(limit&&limit.n>=5)return fail('too_many_pending');
-  const now=new Date().toISOString();
-  // Insert only while the date is open, within the same SQL statement.
-  const inserted=await db.prepare("INSERT INTO bookings (id,token_hash,name,email,phone,date,time,guests,notes,status,table_ids,duration,created,updated) SELECT ?,?,?,?,?,?,?,?,?,'pending','[]',75,?,? WHERE NOT EXISTS (SELECT 1 FROM blocked_days WHERE owner='nea-1889' AND date=?) ON CONFLICT(id) DO NOTHING").bind(d.requestId,digest,d.name,d.email,d.phone,d.date,d.time,d.guests,d.notes,now,now,d.date).run();
+  const now=new Date().toISOString(),since=new Date(Date.now()-86400000).toISOString();
+  // One statement decides both guards and inserts, so there is no read-then-insert gap: db.run() executes inside a
+  // transaction holding the schema-wide advisory lock (lib/database.ts), which serializes every writer, across
+  // application instances, and the statement's snapshot is taken after the lock. The row is inserted only while the
+  // date is open AND fewer than 5 pending requests exist for the same email (case-insensitive) in the last 24 hours.
+  // An email address is not proof of identity: anyone can submit another person's address, so this limits abuse, not impersonation.
+  const inserted=await db.prepare("INSERT INTO bookings (id,token_hash,name,email,phone,date,time,guests,notes,status,table_ids,duration,created,updated) SELECT ?,?,?,?,?,?,?,?,?,'pending','[]',75,?,? WHERE NOT EXISTS (SELECT 1 FROM blocked_days WHERE owner='nea-1889' AND date=?) AND (SELECT COUNT(*) FROM bookings WHERE lower(email)=lower(?) AND created>? AND status='pending')<5 ON CONFLICT(id) DO NOTHING").bind(d.requestId,digest,d.name,d.email,d.phone,d.date,d.time,d.guests,d.notes,now,now,d.date,d.email,since).run();
   const saved=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(d.requestId).first<Booking>();
-  if(!saved)return fail('day_closed');
+  if(!saved){const closed=await db.prepare("SELECT 1 AS x FROM blocked_days WHERE owner='nea-1889' AND date=?").bind(d.date).first();return closed?fail('day_closed'):fail('too_many_pending')}
   if(saved.token_hash!==digest)return fail('reopen_form',409);
   return reply(publicBooking(saved),inserted.meta.changes?201:200);
  }catch{return fail('save_failed')}

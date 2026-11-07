@@ -39,7 +39,7 @@ Neon and Clerk are legacy providers being replaced. Do not build new product dep
 GitHub [Issues](https://github.com/Nejo12/nea1889pizza/issues/1) is the active roadmap. Completed work must not be confused with Production deployment.
 
 1. **Merged:** Supabase PostgreSQL foundation (#11, PR #17); approved Lovable frontend port (#21, PR #26); guest status/localization (PR #27); advisory availability endpoint (#13, PR #28); wizard wired to advisory availability (#13, PR #31); CI on pull requests (#5, PR #30).
-2. **Next (#13):** Origin/CSRF validation and bounded JSON parsing for `POST`/`PATCH /api/booking` are implemented (this PR, A1). Still pending (A2): durable abuse/rate controls. Browser storage must not become booking authority.
+2. **Next (#13):** Origin/CSRF validation and bounded JSON parsing for `POST`/`PATCH /api/booking` are implemented (A1, merged). The five-pending-per-email quota is now atomic (A2a); hosting-level HTTP rate limiting remains deferred to the final hosting platform. Browser storage must not become booking authority.
 3. **Next (#12):** Replace Clerk with Supabase Auth for approved restaurant staff; then implement the real authenticated admin UI (#14).
 4. **Next (#19):** Implement Resend transactional reservation email and reviewed Supabase Auth delivery.
 5. **Release gates (#5, #10, #15):** Establish CI/branch controls, complete operator/legal/menu/privacy/accessibility verification and secure end-to-end tests, and approve one Node.js hosting/preview path.
@@ -87,6 +87,6 @@ npm run build
 - The dedicated Frankfurt Supabase target is `amfaldeqkqqovfggayoj`; migration `20261105160000_nea_reservation_schema` is recorded. A temporary Preview branch `lyichglmkpeyyajkyucz` exists; its rotated runtime credential still needs successful fresh-connection verification.
 - **Production remains the Lovable-hosted site** at `nea1889.pizza`, using demo browser-local reservations. No canonical Next.js Production or Preview deployment has been authorized or verified.
 - Vercel manages the domain/DNS. Current apex and www records intentionally point to Lovable, not a Vercel Next.js deployment. Do not change routing without Founder authorization.
-- Clerk code/dependencies remain until #12; Resend delivery awaits #19. CI (`Test, typecheck, build (Node 24 / PostgreSQL 17)`) runs on pull requests and a `main` protection ruleset exists; remaining release gates stay under #5. Guest `POST`/`PATCH` require a trusted `Origin` (see below); durable rate limiting is not implemented yet (PR A2).
+- Clerk code/dependencies remain until #12; Resend delivery awaits #19. CI (`Test, typecheck, build (Node 24 / PostgreSQL 17)`) runs on pull requests and a `main` protection ruleset exists; remaining release gates stay under #5. Guest `POST`/`PATCH` require a trusted `Origin` (see below); the pending quota is atomic in PostgreSQL, while HTTP rate limiting is deferred to the final hosting platform.
 - Prior Lovable Cloudflare/Hyperdrive engine-vendoring work (#23–#25) is historical. The approved future runtime is the unified Next.js application on a separately authorized Node.js host.
 - See [frontend migration status](docs/frontend-migration.md) and [GitHub roadmap](https://github.com/Nejo12/nea1889pizza/issues/1).

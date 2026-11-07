@@ -201,3 +201,73 @@ test('legacy export import: old token links, occupancy and legacy rows survive; 
   const conflict=run();assert.notEqual(conflict.status,0);assert.match(conflict.stderr,/Conflicting existing record/);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+// ---- Pending quota (#13 / A2a): max 5 pending per email per rolling 24 h, atomic under concurrency ----
+const quotaMail=()=>'q'+Math.random().toString(36).slice(2)+'@Example.com';
+const pendingCount=async email=>(await rows("SELECT count(*)::int n FROM nea.bookings WHERE lower(email)=lower($1) AND status='pending'",email))[0].n;
+test('quota: 12 simultaneous requests with one email store at most 5 pending bookings',{skip},async()=>{
+ const email=quotaMail(),ps=Array.from({length:12},()=>payload({email,date:'2099-12-10'}));
+ const res=await Promise.all(ps.map(p=>api.POST(req(p))));
+ assert.equal(res.filter(r=>r.status===201).length,5);
+ const rejected=res.filter(r=>r.status!==201);assert.equal(rejected.length,7);
+ for(const r of rejected){assert.equal(r.status,429);const b=await r.json();assert.equal(b.code,'too_many_pending');assert.deepEqual(Object.keys(b).sort(),['code','error']);
+  const text=JSON.stringify(b);assert.ok(!text.includes(email)&&!ps.some(p=>text.includes(p.token)))}
+ assert.equal(await pendingCount(email),5);
+ for(const p of ps.filter((_,i)=>res[i].status===429))assert.equal((await rows('SELECT count(*)::int n FROM nea.bookings WHERE id=$1',p.requestId))[0].n,0);
+});
+test('quota: repeated rounds of concurrency never exceed 5, case variations share one quota, other emails are independent',{skip},async()=>{
+ const base=quotaMail().toLowerCase(),variants=[base,base.toUpperCase(),base.replace(/^./,c=>c.toUpperCase()),base.replace(/@/,'@').toUpperCase().toLowerCase()];
+ const res=await Promise.all(Array.from({length:12},(_,i)=>api.POST(req(payload({email:variants[i%4],date:'2099-12-11'})))));
+ assert.equal(res.filter(r=>r.status===201).length,5);assert.equal(res.filter(r=>r.status===429).length,7);assert.equal(await pendingCount(base),5);
+ const other=quotaMail();assert.equal((await api.POST(req(payload({email:other,date:'2099-12-11'})))).status,201);
+ assert.equal((await api.POST(req(payload({email:base.toUpperCase(),date:'2099-12-12'})))).status,429);
+ // stored guest data is not rewritten: the address is kept exactly as submitted
+ assert.ok((await rows("SELECT 1 FROM nea.bookings WHERE email=$1",base.toUpperCase())).length>0);
+});
+test('quota: a legitimate retry of an accepted request still succeeds when the quota is full; conflicting token is rejected',{skip},async()=>{
+ const email=quotaMail(),ps=[];for(let i=0;i<5;i++){const p=payload({email,date:'2099-12-13'});ps.push(p);assert.equal((await api.POST(req(p))).status,201)}
+ assert.equal((await api.POST(req(payload({email,date:'2099-12-13'})))).status,429);
+ assert.equal((await api.POST(req(ps[0]))).status,200);
+ const retries=await Promise.all(ps.flatMap(p=>[api.POST(req(p)),api.POST(req(p))]));assert.ok(retries.every(r=>r.status===200));
+ assert.equal((await api.POST(req({...ps[1],token:'b'.repeat(64)}))).status,409);
+ assert.equal(await pendingCount(email),5);
+});
+test('quota: concurrent retries of one request racing a full quota never 429 the original',{skip},async()=>{
+ const email=quotaMail(),first=Array.from({length:4},()=>payload({email,date:'2099-12-14'}));for(const p of first)await api.POST(req(p));
+ const last=payload({email,date:'2099-12-14'}),res=await Promise.all(Array.from({length:6},()=>api.POST(req(last))));
+ assert.equal(res.filter(r=>r.status===201).length,1);assert.equal(res.filter(r=>r.status===200).length,5);assert.equal(await pendingCount(email),5);
+});
+test('quota: the 24 h window rolls, cancellation frees a slot, confirmed and old requests do not count',{skip},async()=>{
+ const email=quotaMail(),ps=[];for(let i=0;i<5;i++){const p=payload({email,date:'2099-12-15'});ps.push(p);await api.POST(req(p))}
+ assert.equal((await api.POST(req(payload({email,date:'2099-12-15'})))).status,429);
+ // cancel one pending request via its token -> one slot is free again
+ assert.equal((await api.PATCH(new Request('https://test.example/api/booking',{method:'PATCH',headers:{Origin:'https://test.example','X-Booking-Token':ps[0].token}}))).status,200);
+ assert.equal(await pendingCount(email),4);assert.equal((await api.POST(req(payload({email,date:'2099-12-15'})))).status,201);
+ assert.equal((await api.POST(req(payload({email,date:'2099-12-15'})))).status,429);
+ // age one request to just outside / just inside the window
+ const at=ms=>new Date(Date.now()-ms).toISOString();
+ await rows("UPDATE nea.bookings SET created=$1 WHERE id=$2",at(86400000+5000),ps[1].requestId);
+ assert.equal((await api.POST(req(payload({email,date:'2099-12-15'})))).status,201);
+ await rows("UPDATE nea.bookings SET created=$1 WHERE id=$2",at(86400000-60000),ps[2].requestId);
+ assert.equal((await api.POST(req(payload({email,date:'2099-12-15'})))).status,429);
+ // a confirmed booking no longer counts as pending
+ await store.updateBooking(ps[3].requestId,'confirmed',['Tisch 1']);
+ assert.equal((await api.POST(req(payload({email,date:'2099-12-15'})))).status,201);
+});
+test('quota: blocked days stay closed (day_closed beats quota) and concurrent quota+block never admits a booking on a blocked day',{skip},async()=>{
+ const email=quotaMail(),date='2099-12-16';await admin.PATCH(staffReq({action:'block',date}));
+ const res=await Promise.all(Array.from({length:8},()=>api.POST(req(payload({email,date})))));
+ for(const r of res){assert.equal(r.status,409);assert.equal((await r.json()).code,'day_closed')}
+ assert.equal((await rows('SELECT count(*)::int n FROM nea.bookings WHERE date=$1',date))[0].n,0);
+ await admin.PATCH(staffReq({action:'unblock',date}));assert.equal((await api.POST(req(payload({email,date})))).status,201);
+});
+test('quota: concurrent requests, confirmations and cancellations keep occupancy consistent',{skip},async()=>{
+ const email=quotaMail(),date='2099-12-17',ps=Array.from({length:8},()=>payload({email,date,time:'19:00'}));
+ const made=(await Promise.all(ps.map(p=>api.POST(req(p))))).map((r,i)=>r.status===201?ps[i]:null).filter(Boolean);assert.equal(made.length,5);
+ const cancel=p=>api.PATCH(new Request('https://test.example/api/booking',{method:'PATCH',headers:{Origin:'https://test.example','X-Booking-Token':p.token}}));
+ const out=await Promise.allSettled([...made.map(p=>store.updateBooking(p.requestId,'confirmed',['Tisch 1'])),cancel(made[0]),cancel(made[1])]);
+ void out;
+ const occ=await rows("SELECT o.booking_id,b.status FROM nea.occupancy o JOIN nea.bookings b ON b.id=o.booking_id WHERE o.date=$1",date);
+ assert.ok(occ.every(o=>o.status==='confirmed'));assert.equal(new Set(occ.map(o=>o.booking_id)).size<=1,true);
+ assert.equal((await rows("SELECT count(*)::int n FROM nea.bookings WHERE date=$1 AND status='confirmed'",date))[0].n,occ.length?1:0);
+});
