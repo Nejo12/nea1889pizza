@@ -25,3 +25,20 @@ test('personal link: pending only, as an accessible button plus a copyable fallb
  assert.doesNotMatch(p,/<b>"x"/);assert.match(p,/&lt;b&gt;&quot;x&quot;&amp;/);
  assert.doesNotMatch(renderEmail('confirmed',b,url).html,/reservation#/);assert.doesNotMatch(renderEmail('cancelled',b,url).html,/reservation#/);
 });
+
+test('confirmation never claims a personal link was delivered; pending keeps its actual link',()=>{
+ const pending=renderEmail('pending',b,url);
+ assert.match(pending.text,/Persönlicher Link zum Status/);
+ assert.ok(pending.html.includes(url));
+ for(const confirmed of [renderEmail('confirmed',b),renderEmail('confirmed',b,url)]){
+  assert.doesNotMatch(confirmed.text,/persönlichen Statuslink hast du/i);
+  assert.doesNotMatch(confirmed.html,/persönlichen Statuslink hast du/i);
+  assert.doesNotMatch(confirmed.html,/reservation#/);
+ }
+});
+test('staff UI does not falsely claim automatic reservation emails never occur',()=>{
+ const ui=require('node:fs').readFileSync('app/(legacy)/admin/manager.tsx','utf8');
+ assert.doesNotMatch(ui,/Keine automatische E-Mail/);
+ assert.match(ui,/E-Mail je nach Reservierungsereignis/);
+ assert.match(ui,/Bei Statusänderungen kann eine E-Mail versendet werden/);
+});
