@@ -11,13 +11,12 @@ Scope: Issue #12, invite-only restaurant Admin/Staff login. The existing Supabas
 
 ## Required Supabase Auth configuration per environment
 
-Supabase sends a **Magic Link** by default when `signInWithOtp` is called. To send a numeric code instead, edit **Authentication → Email Templates → Magic Link** in the intended Supabase project and include `{{ .Token }}` in the template body. Example:
+Supabase sends a **Magic Link** by default when `signInWithOtp` is called. To send a numeric code instead, edit **Authentication → Email Templates → Magic Link or OTP** in the intended Supabase project and replace the template body with the **canonical branded HTML** in [`supabase/email-templates/staff-otp.html`](../supabase/email-templates/staff-otp.html). Keep the template subject `NEA 1889 — Dein Anmeldecode`.
 
-```html
-<h2>NEA 1889 — Anmeldecode</h2>
-<p>Dein einmaliger Anmeldecode lautet: <strong>{{ .Token }}</strong></p>
-<p>Falls du keinen Code angefordert hast, kannst du diese E-Mail ignorieren.</p>
-```
+This is a **dashboard-managed setting**, not an automatically deployed SQL migration: copy the complete HTML into the intended environment's editor and save. Reopen to confirm that `{{ .Token }}` occurs exactly once and `{{ .ConfirmationURL }}` is absent; then send and inspect one approved test OTP. Do not paste an example code or fixed test code into the email.
+
+**Brand:** mirrors the existing reservation email in `lib/email.ts`: soot `#0E0C07`, dark card `#17130B`, plaster `#EDE4D8`, ochre `#C58C42`, muted `#B9AFA0`, NEA wordmark and Napoli/Berlin motto. All styles are inline and the email requires no external images or webfonts.
+
 
 Use a single-use **300-second expiry** in **Authentication → Providers → Email → Email OTP Expiration**. Retain Supabase's server-side rate limits; test a second request inside 60 seconds and code expiry/invalid attempts. Keep public Auth sign-ups disabled, and never allow staff access based solely on possession of an Auth account.
 
