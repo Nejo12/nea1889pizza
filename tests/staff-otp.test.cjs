@@ -25,20 +25,17 @@ test('staff email is normalized before requesting an OTP',()=>{
 
 test('staff OTP form uses existing-user Supabase Auth and no password sign-in',()=>{
  const src=fs.readFileSync('app/(legacy)/login/login.tsx','utf8');
- assert.match(src,/auth\\.signInWithOtp\\(/);
- assert.match(src,/shouldCreateUser:\\s*false/,'public signup must remain disabled');
- assert.match(src,/auth\\.verifyOtp\\(/);
- assert.match(src,/type:\\s*['"]email['"]/);
- assert.match(src,/autoComplete=['"]one-time-code['"]/);
- assert.match(src,/STAFF_OTP_RESEND_SECONDS/);
- assert.doesNotMatch(src,/signInWithPassword|signUp\\(|type="password"/);
+ for(const part of ['auth.signInWithOtp(', 'shouldCreateUser:false','auth.verifyOtp(', "type:'email'",'autoComplete="one-time-code"','STAFF_OTP_RESEND_SECONDS'])
+  assert.ok(src.includes(part),`missing ${part}`);
+ for(const part of ['signInWithPassword','signUp(','type="password"'])
+  assert.ok(!src.includes(part),`forbidden ${part}`);
 });
 
 test('verified staff access stays server-side and membership-gated',()=>{
  const src=fs.readFileSync('lib/staff.ts','utf8');
- assert.match(src,/supabase\\.auth\\.getUser\\(/);
- assert.match(src,/staff_members WHERE user_id=\\? AND active=true/);
+ assert.ok(src.includes('supabase.auth.getUser('));
+ assert.ok(src.includes('staff_members WHERE user_id=? AND active=true'));
  const route=fs.readFileSync('app/api/staff/session/route.ts','utf8');
- assert.match(route,/staffFromRequest/);
- assert.match(route,/no-store/);
+ assert.ok(route.includes('staffFromRequest'));
+ assert.ok(route.includes('no-store'));
 });
