@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const ts=require('typescript');
 
 function loadOtpHelpers(){
- const source=fs.readFileSync('lib/staff-otp.ts','utf8');
+ const source=fs.readFileSync('lib/otp-staff.ts','utf8');
  const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  const mod={exports:{}};
  new Function('module','exports',code)(mod,mod.exports);
