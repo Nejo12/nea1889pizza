@@ -1,7 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import {browserClient} from '@/lib/supabase/browser';
-import {isValidStaffOtp,normalizeStaffEmail,STAFF_OTP_LENGTH,STAFF_OTP_RESEND_SECONDS} from '@/lib/staff-otp';
+import {isValidStaffOtp,normalizeStaffEmail,STAFF_OTP_LENGTH,STAFF_OTP_RESEND_SECONDS} from '@/lib/otp-staff';
 import {StaffFetchContext,type StaffFetch} from './auth-fetch';
 import Manager from '../admin/manager';
 
