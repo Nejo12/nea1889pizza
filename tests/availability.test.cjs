@@ -1,17 +1,17 @@
 const {test,before,after}=require('node:test');const assert=require('node:assert/strict');const ts=require('typescript');const fs=require('node:fs');const crypto=require('node:crypto');const {DatabaseSync}=require('node:sqlite');
 // Issue #13: read-only, privacy-safe, advisory availability. Confirmation stays the only authority.
 function load(path,overrides={}){const m={exports:{}};const js=ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','module','exports',js)(name=>name in overrides?overrides[name]:require(name),m,m.exports);return m.exports;}
-const rules=load('lib/reservation-rules.ts');
+const rules=load('lib/reservation-rules.ts');process.env.AUTHORIZED_ORIGINS='https://t.example';const security=load('lib/request-security.ts',{'./trusted-origins':load('lib/trusted-origins.ts')});
 const DAY='2099-11-02'; // a Monday, open
 const SAT=(()=>{for(let d=1;d<=7;d++){const s='2099-11-0'+d;if(new Date(s+'T12:00:00Z').getUTCDay()===6)return s}})();
-function wire(db){const staff={database:()=>db,isStaff:async()=>false};const store=load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':rules});const imports={'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/reservation-rules':rules};
+function wire(db){const staff={database:()=>db,isStaff:async()=>false};const store=load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':rules});const imports={'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/reservation-rules':rules,'@/lib/request-security':security};
  return{store,booking:load('app/api/booking/route.ts',imports),avail:load('app/api/availability/route.ts',imports)}}
 function sqliteDb(){const sql=new DatabaseSync(':memory:');for(const f of fs.readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort())sql.exec(fs.readFileSync('drizzle/'+f,'utf8'));
  const prepare=query=>{let args=[];const s={bind(...v){args=v;return s},async first(){return sql.prepare(query).get(...args)||null},async all(){return{results:sql.prepare(query).all(...args)}},async run(){const r=sql.prepare(query).run(...args);return{meta:{changes:Number(r.changes)}}}};return s};
  return{sql,db:{prepare,async batch(c){sql.exec('BEGIN');try{const r=[];for(const x of c)r.push(await x.run());sql.exec('COMMIT');return r}catch(e){sql.exec('ROLLBACK');throw e}}}}}
 const token=()=>(crypto.randomUUID()+crypto.randomUUID()).replaceAll('-','');
 const payload=(p={})=>({requestId:crypto.randomUUID(),token:token(),name:'Test Gast',email:'g'+Math.random().toString(36).slice(2)+'@example.com',phone:'+49 12345678',date:DAY,time:'19:00',guests:1,notes:'',website:'',accepted:true,...p});
-const post=b=>new Request('https://t.example/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+const post=b=>new Request('https://t.example/api/booking',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://t.example'},body:JSON.stringify(b)});
 const get=(q)=>new Request('https://t.example/api/availability?'+new URLSearchParams(q));
 const slots=async(w,q)=>{const r=await w.avail.GET(get(q));assert.equal(r.status,200);return r.json()};
 const statusOf=(body,time)=>body.slots.find(s=>s.time===time).status;
@@ -94,7 +94,7 @@ const skip=support.available()?false:'No PostgreSQL available.';
 let srv,pg,pw;
 before(async()=>{if(skip)return;srv=await support.server();pg=await support.createDatabase(postgres,srv.adminUrl);process.env.DATABASE_URL=pg.runtimeUrl;process.env.NEA_DATABASE_SCHEMA='nea';
  const adapter=support.load('lib/database.ts',{postgres});const staff={database:()=>adapter.database(),isStaff:async()=>false};const r=support.load('lib/reservation-rules.ts');
- const store=support.load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':r});const imports={'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/reservation-rules':r};
+ const store=support.load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':r});const imports={'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/reservation-rules':r,'@/lib/request-security':support.load('lib/request-security.ts',{'./trusted-origins':support.load('lib/trusted-origins.ts')})};
  pw={store,booking:support.load('app/api/booking/route.ts',imports),avail:support.load('app/api/availability/route.ts',imports)}});
 after(async()=>{if(skip)return;await pg.drop();srv.stop()});
 test('PostgreSQL: concurrent confirms plus availability reads — one winner, no partial occupancy, slot then full',{skip},async()=>{

@@ -1,7 +1,7 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const ts=require('typescript');const fs=require('node:fs');const {DatabaseSync}=require('node:sqlite');
 // Guest reservation status: structured error codes, token handling, privacy, cancellation and localization.
 function load(path,overrides={}){const m={exports:{}};const js=ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','module','exports',js)(name=>name in overrides?overrides[name]:require(name),m,m.exports);return m.exports;}
-const rules=load('lib/reservation-rules.ts');
+const rules=load('lib/reservation-rules.ts');process.env.AUTHORIZED_ORIGINS='https://example.test';const security=load('lib/request-security.ts',{'./trusted-origins':load('lib/trusted-origins.ts')});
 const guest=load('lib/guest-status.ts',{'./reservation-rules':rules});
 const dict=load('lib/site/i18n-dict.ts').DICT;
 const LANGS=['de','en','it','fr','es','pt'];
@@ -9,8 +9,8 @@ function fixture({broken=false}={}){const sql=new DatabaseSync(':memory:');for(c
  function prepare(query){let args=[];const s={bind(...v){args=v;return s},async first(){if(broken)throw Error('db down');return sql.prepare(query).get(...args)||null},async all(){return{results:sql.prepare(query).all(...args)}},async run(){const r=sql.prepare(query).run(...args);return{meta:{changes:Number(r.changes)}}}};return s}
  const db={prepare,async batch(c){if(broken)throw Error('db down');sql.exec('BEGIN');try{const r=[];for(const x of c)r.push(await x.run());sql.exec('COMMIT');return r}catch(e){sql.exec('ROLLBACK');throw e}}};
  const staffModule={database:()=>db,isStaff:async()=>false};const store=load('lib/booking-store.ts',{'./staff':staffModule,'./reservation-rules':rules});
- const api=load('app/api/booking/route.ts',{'@/lib/staff':staffModule,'@/lib/booking-store':store,'@/lib/reservation-rules':rules});return{api,sql}}
-const req=(method,token,body)=>new Request('https://example.test/api/booking',{method,headers:{'Content-Type':'application/json',...(token?{'X-Booking-Token':token}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const api=load('app/api/booking/route.ts',{'@/lib/staff':staffModule,'@/lib/booking-store':store,'@/lib/reservation-rules':rules,'@/lib/request-security':security});return{api,sql}}
+const req=(method,token,body)=>new Request('https://example.test/api/booking',{method,headers:{'Content-Type':'application/json',Origin:'https://example.test',...(token?{'X-Booking-Token':token}:{})},...(body?{body:JSON.stringify(body)}:{})});
 const payload=(p={})=>({requestId:crypto.randomUUID(),token:(crypto.randomUUID()+crypto.randomUUID()).replaceAll('-',''),name:'Test Gast',email:'test@example.com',phone:'+49 12345678',date:'2099-11-02',time:'19:00',guests:4,notes:'',website:'',accepted:true,...p});
 const expectCode=async(res,status,code)=>{assert.equal(res.status,status);const b=await res.json();assert.equal(b.code,code);assert.equal(b.error,guest.BOOKING_ERRORS[code].message,'German message kept for compatibility');return b};
 
@@ -49,7 +49,7 @@ test('booking submission errors carry structured codes',async()=>{const f=fixtur
  await expectCode(await f.api.POST(req('POST',null,payload({date:'2099-12-01',email:'c@example.com'}))),409,'day_closed');
  for(let i=0;i<4;i++)await f.api.POST(req('POST',null,payload()));
  await expectCode(await f.api.POST(req('POST',null,payload())),429,'too_many_pending');
- const big=new Request('https://example.test/api/booking',{method:'POST',headers:{'content-length':'20000'},body:'{}'});
+ const big=new Request('https://example.test/api/booking',{method:'POST',headers:{'content-type':'application/json',origin:'https://example.test','content-length':'20000'},body:'{}'});
  await expectCode(await f.api.POST(big),413,'too_large')});
 
 test('legacy German-only responses still resolve to a code',()=>{

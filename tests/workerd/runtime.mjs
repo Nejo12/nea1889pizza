@@ -43,7 +43,7 @@ before(async()=>{
   db={admin,runtimeUrl:t.runtime,adminUrl:t.admin,async drop(){await scrub(admin);await admin.end();}};
  }else{server=await pg.server();db=await pg.createDatabase(postgres,server.adminUrl);}
  const port=await free();base=`http://127.0.0.1:${port}`;
- worker=spawn('npx',['--yes',WRANGLER,'dev','--local','--ip','127.0.0.1','--port',String(port),'--var',`DATABASE_URL:${db.runtimeUrl}`,'--var','NEA_DATABASE_SCHEMA:nea'],{cwd:here,detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false',CI:'1'}});
+ worker=spawn('npx',['--yes',WRANGLER,'dev','--local','--ip','127.0.0.1','--port',String(port),'--var',`DATABASE_URL:${db.runtimeUrl}`,'--var','NEA_DATABASE_SCHEMA:nea','--var',`AUTHORIZED_ORIGINS:${base}`],{cwd:here,detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false',CI:'1'}});
  worker.stdout.on('data',d=>log+=d);worker.stderr.on('data',d=>log+=d);
  for(let i=0;i<240;i++){try{if((await fetch(base+'/probe/runtime')).ok)return;}catch{}await new Promise(r=>setTimeout(r,500));}
  throw Error('workerd did not start:\n'+log);
@@ -51,7 +51,7 @@ before(async()=>{
 after(async()=>{try{process.kill(-worker.pid,'SIGTERM');}catch{}   // whole process group: npx > wrangler > workerd
  await db?.drop();server?.stop();});
 const host=hosted?{skip:false}:{skip:'hosted pooler only (npm run test:workerd:preview)'};
-const post=(p,b,method='POST',token)=>fetch(base+p,{method,headers:{'content-type':'application/json',...(token?{'x-booking-token':token}:{})},...(b?{body:JSON.stringify(b)}:{})});
+const post=(p,b,method='POST',token)=>fetch(base+p,{method,headers:{'content-type':'application/json',origin:base,...(token?{'x-booking-token':token}:{})},...(b?{body:JSON.stringify(b)}:{})});
 const hex=()=>crypto.randomUUID().replaceAll('-','')+crypto.randomUUID().replaceAll('-','');
 const booking=(patch={})=>({requestId:crypto.randomUUID(),token:hex(),name:'Test Gast',email:`g${Math.random()}@example.com`,phone:'+49 12345678',date:'2099-11-02',time:'19:00',guests:4,notes:'',website:'',accepted:true,...patch});
 const count=async(q)=>Number((await db.admin.unsafe(q))[0].n);
