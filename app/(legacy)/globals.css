@@ -25,3 +25,14 @@
 }
 .install-app{display:flex;gap:14px;max-width:660px;margin:24px auto;padding:20px;background:#faf7f0;border:1px solid #ded5c2;border-radius:8px;color:#33382e;font-size:12px;line-height:1.6}.install-app img{border-radius:6px;flex-shrink:0}.install-app p{margin:5px 0 10px}.install-app summary{cursor:pointer;text-decoration:underline;color:#65532d}.install-app details p{max-width:520px}.install-app .primary{margin-top:12px}@media(max-width:760px){.install-app{margin:16px;padding:16px}}@media(display-mode:standalone){.install-app{display:none}}
 .login-shell{max-width:520px;margin:40px auto;padding:28px;background:#faf7f0;border:1px solid #ded5c2;border-radius:8px;line-height:1.7}.login-shell h1{font-size:32px;margin-top:18px}.login-shell a{color:#65532d}.login-shell .primary{color:#fff;margin:18px 0}.login-shell label{display:block;margin:18px 0}.login-shell input{display:block;width:100%;padding:12px;margin-top:5px;border:1px solid #c8c3b7;border-radius:4px}.staff-account{display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:12px 24px;background:#eee9dd;font-size:12px}.setup-link{padding:10px;text-align:right;background:#eee9dd}.setup-link a{color:#65532d}@media(max-width:600px){.login-shell{margin:18px 12px;padding:20px}.staff-account{padding:10px}}
+
+/* Issue #14 – operational admin actions */
+.success-note{padding:10px 21px;color:#2f5d3a;background:#e6f0e6;font-size:11px;margin-bottom:15px}
+.action-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.action-row .submit{width:auto;margin:0;flex:1 1 150px}
+.secondary{border:1px solid var(--line);background:#fff;color:var(--ink);padding:13px 16px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer}
+.danger-outline{color:#96573b;border-color:#d9b8a6}
+.danger{border:1px solid #96573b;background:#96573b;color:#fff;padding:13px 16px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer}
+.confirm-cancel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:11px;color:#96573b}
+.filters{flex-wrap:wrap}.tabs{flex-wrap:wrap}
+.text-button:disabled{opacity:.5}
