@@ -16,12 +16,13 @@
     "test:workerd:preview": "node --env-file=.env.preflight --test tests/workerd/runtime.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "db:import": "node scripts/import-sites.mjs",
-    "db:local": "npx --yes supabase@3.0.0 db start",
-    "db:reset": "npx --yes supabase@3.0.0 db reset --local"
+    "db:local": "npx --yes supabase@3.0.0 start -x storage-api,imgproxy,realtime,studio,edge-runtime,logflare,vector,postgres-meta,mailpit,supavisor",
+    "db:reset": "npx --yes supabase@3.0.0 db reset --local",
+    "auth:seed-local": "node scripts/seed-local-staff.mjs"
   },
   "dependencies": {
-    "@clerk/backend": "3.26.1",
-    "@clerk/react": "6.18.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
     "@tailwindcss/postcss": "4.2.1",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",

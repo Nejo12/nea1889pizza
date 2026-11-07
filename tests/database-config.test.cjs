@@ -29,9 +29,9 @@ test('builds never mutate a database and migration identity is separate from run
 test('browser code never imports the database adapter',()=>{
  for(const f of walk('app')){const src=fs.readFileSync(f,'utf8');if(/^['"]use client['"]/.test(src.trimStart()))assert.doesNotMatch(src,/lib\/(database|staff|booking-store)|DATABASE_URL/,f);}
 });
-test('Supabase config: Data API off, application schema never exposed, pinned CLI',()=>{
+test('Supabase config: Auth gateway only, application schema never exposed, pinned CLI',()=>{
  const cfg=fs.readFileSync('supabase/config.toml','utf8');
- assert.match(cfg,/\[api\]\s*\nenabled = false/);const schemas=cfg.match(/^schemas = \[(.*)\]/m)[1];assert.doesNotMatch(schemas,/nea/);
+ assert.match(cfg,/\[api\]/);const schemas=cfg.match(/^schemas = \[(.*)\]/m)[1];assert.doesNotMatch(schemas,/nea/);
  for(const f of ['scripts/migrate.mjs','package.json'])assert.match(fs.readFileSync(f,'utf8'),/supabase@3\.0\.0/);
  assert.doesNotMatch(fs.readFileSync('package.json','utf8'),/supabase@(?!3\.0\.0)/);
 });

@@ -7,7 +7,9 @@ project_id = "nea1889pizza"
 # The Data API is not used. All guest records are reached only through the
 # Next.js server and its private SQL role, never through PostgREST.
 [api]
-enabled = false
+# Needed only as the gateway to Supabase Auth (#12). Local port offset keeps it beside other stacks.
+enabled = true
+port = 54521
 # Even if the Data API is switched on later, the application schema `nea`
 # must never be listed here.
 schemas = ["public"]
@@ -43,8 +45,19 @@ enabled = false
 enabled = false
 
 [auth]
-# Issue #12 introduces Supabase Auth.
-enabled = false
+# Staff authentication (#12). Local demo only; hosted settings are managed in the Supabase dashboard.
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+# Public staff registration is disabled: accounts are created through controlled setup (npm run auth:seed-local).
+enable_signup = false
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enabled = true
+enable_confirmations = false
 
 [edge_runtime]
 enabled = false

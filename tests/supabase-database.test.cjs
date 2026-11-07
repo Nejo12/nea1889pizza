@@ -7,7 +7,7 @@ const skip=support.available()?false:'No PostgreSQL available: install initdb/pg
 let srv,db,rules,store,api,admin,adapter,gate=null,staff=true;
 const real=()=>adapter.database();
 // Lets a test freeze updateBooking between its read and its transaction to force a genuine race.
-const staffModule={isStaff:async()=>staff,database:()=>({prepare:q=>{const s=real().prepare(q);if(gate&&/^SELECT \* FROM bookings WHERE id=\?$/.test(q)&&gate.armed){const first=s.first.bind(s);s.first=async()=>{const r=await first();gate.armed=false;gate.reached();await gate.release;return r};}return s},batch:c=>real().batch(c)})};
+const staffModule={isStaff:async()=>staff,staffFromRequest:async()=>staff?{ok:true,staff:{id:'u',email:'s@example.com',role:'staff'}}:{ok:false,status:401},database:()=>({prepare:q=>{const s=real().prepare(q);if(gate&&/^SELECT \* FROM bookings WHERE id=\?$/.test(q)&&gate.armed){const first=s.first.bind(s);s.first=async()=>{const r=await first();gate.armed=false;gate.reached();await gate.release;return r};}return s},batch:c=>real().batch(c)})};
 before(async()=>{
  if(skip)return;
  srv=await support.server();db=await support.createDatabase(postgres,srv.adminUrl);
@@ -22,7 +22,7 @@ after(async()=>{if(skip)return;await db.drop();srv.stop();});
 const token=()=>crypto.randomUUID().replaceAll('-','')+crypto.randomUUID().replaceAll('-','');
 const payload=(patch={})=>({requestId:crypto.randomUUID(),token:token(),name:'Test Gast',email:'t'+Math.random().toString(36).slice(2)+'@example.com',phone:'+49 12345678',date:'2099-11-02',time:'19:00',guests:4,notes:'',accepted:true,website:'',...patch});
 const req=(p,method='POST',body=true)=>new Request('https://test.example/api/booking',{method,headers:{'Content-Type':'application/json',Origin:'https://test.example','X-Booking-Token':p.token},...(method==='POST'&&body?{body:JSON.stringify(p)}:{})});
-const staffReq=body=>new Request('https://test.example/api/reservations',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+const staffReq=body=>new Request('https://test.example/api/reservations',{method:'PATCH',headers:{'Content-Type':'application/json',Origin:'https://test.example'},body:JSON.stringify(body)});
 const create=async patch=>{const p=payload(patch);assert.equal((await api.POST(req(p))).status,201);return p;};
 const rows=async(sql,...a)=>db.admin.unsafe(sql,a);
 const occupancyOf=async id=>(await rows('SELECT count(*)::int n FROM nea.occupancy WHERE booking_id=$1',id))[0].n;
@@ -38,11 +38,11 @@ test('migration creates the schema, keys, indexes and unchanged column types',{s
  assert.equal(cols.find(c=>c.table_name==='bookings'&&c.column_name==='table_ids').column_default,"'[]'::text");
  assert.equal(cols.find(c=>c.table_name==='bookings'&&c.column_name==='duration').column_default,'75');
  const pks=await rows("SELECT conrelid::regclass::text t FROM pg_constraint WHERE contype='p' AND connamespace='nea'::regnamespace ORDER BY 1");
- assert.deepEqual(pks.map(r=>r.t),['nea.blocked_days','nea.bookings','nea.occupancy','nea.reservations']);
+ assert.deepEqual(pks.map(r=>r.t),['nea.blocked_days','nea.bookings','nea.occupancy','nea.reservations','nea.staff_members']);
  const idx=(await rows("SELECT indexname FROM pg_indexes WHERE schemaname='nea'")).map(r=>r.indexname);
  for(const i of ['bookings_date_time','bookings_token','occupancy_booking'])assert.ok(idx.includes(i),i);
  const rls=await rows("SELECT relname,relrowsecurity FROM pg_class WHERE relnamespace='nea'::regnamespace AND relkind='r'");
- assert.ok(rls.length===4&&rls.every(r=>r.relrowsecurity));
+ assert.ok(rls.length===5&&rls.every(r=>r.relrowsecurity));
 });
 
 test('migration files are versioned, non-empty and contain no secrets',{skip},()=>{
