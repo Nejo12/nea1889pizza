@@ -1,15 +1,17 @@
 import {z} from 'zod';
 import {database} from '@/lib/staff';
+import {notifyReservation,emailsEnabled} from '@/lib/email';
 import {hashToken,publicBooking,Booking} from '@/lib/booking-store';
 import {checkRequestOrigin,readJsonBody} from '@/lib/request-security';
 import {reservationSchema,BOOKING_ERRORS,BookingErrorCode} from '@/lib/reservation-rules';
 export const dynamic='force-dynamic';
+const guest=(b:Booking)=>({...publicBooking(b),...(emailsEnabled()?{emailNotifications:true}:{})});
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const fail=(code:BookingErrorCode,status:number=BOOKING_ERRORS[code].status)=>reply({error:BOOKING_ERRORS[code].message,code},status);
 const guardOrigin=(req:Request)=>{const v=checkRequestOrigin(req);return v==='ok'?null:v==='misconfigured'?fail('unavailable'):fail('forbidden_origin')};
 const tokenSchema=z.string().regex(/^[a-f0-9]{64}$/);
 async function authorized(req:Request){const token=tokenSchema.safeParse(req.headers.get('X-Booking-Token'));if(!token.success)return null;return database().prepare('SELECT * FROM bookings WHERE token_hash=?').bind(await hashToken(token.data)).first<Booking>();}
-export async function GET(req:Request){try{const b=await authorized(req);return b?reply(publicBooking(b)):fail('not_found')}catch{return fail('unavailable')}}
+export async function GET(req:Request){try{const b=await authorized(req);return b?reply(guest(b)):fail('not_found')}catch{return fail('unavailable')}}
 export async function POST(req:Request){
  try{
   const blocked=guardOrigin(req);if(blocked)return blocked;
@@ -20,7 +22,7 @@ export async function POST(req:Request){
   const key=z.object({requestId:z.string().uuid(),token:tokenSchema}).safeParse(raw);if(!key.success)return fail('reopen_form');
   const db=database();const digest=await hashToken(key.data.token);
   const existing=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(key.data.requestId).first<Booking>();
-  if(existing)return existing.token_hash===digest?reply(publicBooking(existing)):fail('reopen_form',409);
+  if(existing)return existing.token_hash===digest?reply(guest(existing)):fail('reopen_form',409);
   const parsed=reservationSchema().safeParse(raw);if(!parsed.success||raw['accepted']!==true)return fail('invalid_details');
   const d=parsed.data;
   const now=new Date().toISOString(),since=new Date(Date.now()-86400000).toISOString();
@@ -33,10 +35,11 @@ export async function POST(req:Request){
   const saved=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(d.requestId).first<Booking>();
   if(!saved){const closed=await db.prepare("SELECT 1 AS x FROM blocked_days WHERE owner='nea-1889' AND date=?").bind(d.date).first();return closed?fail('day_closed'):fail('too_many_pending')}
   if(saved.token_hash!==digest)return fail('reopen_form',409);
-  return reply(publicBooking(saved),inserted.meta.changes?201:200);
+  if(inserted.meta.changes)await notifyReservation('pending',saved,`${req.headers.get('Origin')}/reservation#${key.data.token}`);
+  return reply(guest(saved),inserted.meta.changes?201:200);
  }catch{return fail('save_failed')}
 }
 export async function PATCH(req:Request){const blocked=guardOrigin(req);if(blocked)return blocked;try{const b=await authorized(req);if(!b)return fail('not_found');const db=database();
  const commands=[db.prepare("DELETE FROM occupancy WHERE booking_id=? AND EXISTS(SELECT 1 FROM bookings WHERE id=? AND status IN ('pending','confirmed'))").bind(b.id,b.id),db.prepare("UPDATE bookings SET status='cancelled',table_ids='[]',updated=? WHERE id=? AND status IN ('pending','confirmed')").bind(new Date().toISOString(),b.id)];await db.batch(commands);
- const saved=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(b.id).first<Booking>();if(saved?.status!=='cancelled')return fail('cannot_modify');return reply(publicBooking(saved));
+ const saved=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(b.id).first<Booking>();if(saved?.status!=='cancelled')return fail('cannot_modify');if(b.status!=='cancelled')await notifyReservation('cancelled',saved);return reply(guest(saved));
  }catch{return fail('cancel_failed')}}

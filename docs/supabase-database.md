@@ -61,3 +61,13 @@ The four existing booking rows still need Founder classification before any disc
 ## Provider-switch rollback
 
 Neon and Clerk are untouched. Until cutover, rollback is: restore `DATABASE_URL` and `NEA_DATABASE_SCHEMA=nea_migration_preview` in Vercel and redeploy the previous deployment; the adapter works with either provider. After cutover, export any Supabase bookings created since (`pg_dump --data-only --schema=nea`) and import them into Neon before switching back, then keep Supabase read-only until reconciled.
+
+## Transactional email (#19)
+
+`lib/email.ts` sends pending / confirmed / cancelled emails through the Resend HTTP API (server-side only; no SDK).
+
+- **Off by default.** Enabled only when `RESEND_API_KEY` and `EMAIL_FROM` are set (optional `EMAIL_REPLY_TO`). Activation on Production needs a verified sending domain (SPF/DKIM/DMARC) and Founder approval; this PR changes no DNS or hosting.
+- **Exactly-once per event.** `nea.email_events` (migration `20261107140000`) holds one row per `<booking_id>:<kind>`; only the caller that claims the row sends, and the same value is the Resend `Idempotency-Key`. A `failed` row (or a `sending` claim older than 10 minutes) can be re-claimed by the same event; confirmed→cancelled→confirmed sends one confirmation. Only status, kind and timestamps are stored: no address, content or token.
+- **Failure never touches bookings.** Sending runs after the booking transaction commits; errors are recorded as `failed` and swallowed.
+- **Personal link.** Only the pending email contains it (the raw token exists only at submission; the database stores its hash). Confirmation/cancellation emails refer back to it.
+- **Not included here (separate activation steps):** Supabase Auth invite/recovery delivery via Resend SMTP (configured in the Supabase dashboard / `supabase/config.toml` with a Resend SMTP key and verified domain), bounce/complaint webhooks, apply the migration to the hosted project.

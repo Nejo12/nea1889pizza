@@ -9,7 +9,7 @@ import { SiteLayout, Sticker } from "@/components/site/SiteChrome";
 import { errorKey, statusKey, tokenFromHash } from "@/lib/guest-status";
 import { tableEndTime } from "@/lib/reservation-rules";
 
-type Booking = { name: string; date: string; time: string; guests: number; status: string; duration: number };
+type Booking = { name: string; date: string; time: string; guests: number; status: string; duration: number; emailNotifications?: boolean };
 const SETTLED = ["cancelled", "noshow", "arrived"];
 const btn = "poster-shadow border border-ochre/60 px-6 py-3 font-display text-xl disabled:opacity-60";
 
@@ -117,7 +117,7 @@ export default function StatusPage() {
             </div>
           )}
 
-          {booking && <p className="mt-6 text-xs text-muted-foreground">{t("rs.keepLink")}</p>}
+          {booking && <p className="mt-6 text-xs text-muted-foreground">{t(booking.emailNotifications ? "rs.keepLinkMail" : "rs.keepLink")}</p>}
           <p className="mt-4"><Link href="/reservierung" className="underline hover:text-ochre">{t("rs.newRequest")}</Link></p>
         </div>
       </section>
