@@ -56,6 +56,7 @@ export const BOOKING_ERRORS = {
   not_found: {status: 404, message: 'Reservierung nicht gefunden. Bitte den vollständigen persönlichen Link öffnen.'},
   unavailable: {status: 503, message: 'Status gerade nicht verfügbar. Bitte erneut versuchen.'},
   too_large: {status: 413, message: 'Anfrage zu groß.'},
+  forbidden_origin: {status: 403, message: 'Anfrage von dieser Seite nicht zulässig.'},
   invalid_request: {status: 400, message: 'Ungültige Anfrage.'},
   reopen_form: {status: 400, message: 'Bitte Formular neu öffnen.'},
   invalid_details: {status: 400, message: 'Bitte Angaben, Datenschutzhinweis und einen zukünftigen Termin prüfen.'},

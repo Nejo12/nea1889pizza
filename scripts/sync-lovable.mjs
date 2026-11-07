@@ -10,7 +10,7 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 export const OUT_DIR='src/server/booking';
 // source (this repo) -> file name inside OUT_DIR
-export const FILES=[['lib/database.ts','database.ts'],['lib/reservation-rules.ts','reservation-rules.ts'],['lib/booking-store.ts','booking-store.ts'],['app/api/booking/route.ts','guest-api.ts']];
+export const FILES=[['lib/database.ts','database.ts'],['lib/reservation-rules.ts','reservation-rules.ts'],['lib/booking-store.ts','booking-store.ts'],['lib/trusted-origins.ts','trusted-origins.ts'],['lib/request-security.ts','request-security.ts'],['app/api/booking/route.ts','guest-api.ts']];
 const sha=s=>createHash('sha256').update(s).digest('hex');
 const HEADER=/^\/\/ GENERATED[^\n]*\n\/\/ source-sha256: ([0-9a-f]{64}) output-sha256: ([0-9a-f]{64})\n/;
 // Only these import shapes are understood; anything else fails loudly instead of being copied blindly.
@@ -18,7 +18,7 @@ export function rewrite(source,name){
  const staleNames=new Set(FILES.map(f=>f[1].replace(/\.ts$/,'')));
  return source.replace(/^(import\s+(?:type\s+)?(?:\{([^}]*)\}|[\w*\s,{}]+?)\s+from\s+)'([^']+)'/gm,(all,pre,names,spec)=>{
   if(spec==='zod')return `${pre}'zod/v4'`; // Lovable pins zod 3.25.x, which ships the v4 API at zod/v4
-  if(spec==='postgres'||spec==='./reservation-rules'||spec==='./database')return all;
+  if(spec==='postgres'||spec==='./reservation-rules'||spec==='./trusted-origins'||spec==='./database')return all;
   if(spec==='./staff'||spec==='@/lib/staff'){
    const used=(names||'').split(',').map(s=>s.trim()).filter(Boolean);
    if(used.length!==1||used[0]!=='database')throw Error(`${name}: only "database" may be imported from staff (got ${used.join(',')}); Clerk/auth must not enter the vendored engine.`);

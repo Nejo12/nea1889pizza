@@ -28,7 +28,7 @@ Workflow for any later change: edit here → `npm test` → `node scripts/sync-l
 7. **Dependency.** The Lovable repo gains one runtime dependency, `postgres@3.4.7` (exact, same as here), added with Lovable's package manager (bun) so `bun.lock` stays authoritative.
 8. **Still open (not testable offline):** how Lovable injects secrets into its published Worker, and whether Lovable offers a non-Production publish.
 
-CORS/CSRF: unchanged from `docs/issue-21-runtime-proof.md`; add an `Origin` check and rate limit when the route is mounted (#13).
+CORS/CSRF: the `Origin` check and body limits are implemented (#13, see `docs/frontend-migration.md`); rate limiting is still pending (PR A2).
 
 ## Plan: non-Production Supabase transaction-pooler test
 

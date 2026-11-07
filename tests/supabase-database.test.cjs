@@ -15,13 +15,13 @@ before(async()=>{
  adapter=support.load('lib/database.ts',{postgres});
  rules=support.load('lib/reservation-rules.ts');
  store=support.load('lib/booking-store.ts',{'./staff':staffModule,'./reservation-rules':rules});
- const imports={'@/lib/staff':staffModule,'@/lib/booking-store':store,'@/lib/reservation-rules':rules};
+ process.env.AUTHORIZED_ORIGINS='https://test.example';const imports={'@/lib/staff':staffModule,'@/lib/booking-store':store,'@/lib/reservation-rules':rules,'@/lib/request-security':support.load('lib/request-security.ts',{'./trusted-origins':support.load('lib/trusted-origins.ts')})};
  api=support.load('app/api/booking/route.ts',imports);admin=support.load('app/api/reservations/route.ts',imports);
 });
 after(async()=>{if(skip)return;await db.drop();srv.stop();});
 const token=()=>crypto.randomUUID().replaceAll('-','')+crypto.randomUUID().replaceAll('-','');
 const payload=(patch={})=>({requestId:crypto.randomUUID(),token:token(),name:'Test Gast',email:'t'+Math.random().toString(36).slice(2)+'@example.com',phone:'+49 12345678',date:'2099-11-02',time:'19:00',guests:4,notes:'',accepted:true,website:'',...patch});
-const req=(p,method='POST',body=true)=>new Request('https://test.example/api/booking',{method,headers:{'Content-Type':'application/json','X-Booking-Token':p.token},...(method==='POST'&&body?{body:JSON.stringify(p)}:{})});
+const req=(p,method='POST',body=true)=>new Request('https://test.example/api/booking',{method,headers:{'Content-Type':'application/json',Origin:'https://test.example','X-Booking-Token':p.token},...(method==='POST'&&body?{body:JSON.stringify(p)}:{})});
 const staffReq=body=>new Request('https://test.example/api/reservations',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 const create=async patch=>{const p=payload(patch);assert.equal((await api.POST(req(p))).status,201);return p;};
 const rows=async(sql,...a)=>db.admin.unsafe(sql,a);
