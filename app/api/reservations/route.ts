@@ -1,10 +1,13 @@
 import {z} from 'zod';
 import {database,staffFromRequest} from '@/lib/staff';
-import {checkRequestOrigin} from '@/lib/request-security';
+import {checkRequestOrigin,readJsonBody} from '@/lib/request-security';
 import {Booking,updateBooking} from '@/lib/booking-store';
 import {blockSchema,statusSchema,reservationSchema} from '@/lib/reservation-rules';
 export const dynamic='force-dynamic';
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
+function invalidBody(reason:'media_type'|'too_large'|'malformed'){
+ return reply({error:reason==='too_large'?'Anfrage zu groß.':'Ungültige JSON-Anfrage.'},reason==='too_large'?413:reason==='media_type'?415:400);
+}
 // Server-side gate for every operation: 401 anonymous/expired session, 403 signed in but not an active staff member.
 // Cookie sessions are ambient credentials, so state-changing calls must also come from a trusted origin.
 async function deny(req:Request,mutating:boolean){
@@ -14,8 +17,8 @@ async function deny(req:Request,mutating:boolean){
  return reply({error:v.status===401?'Sitzung abgelaufen. Bitte erneut anmelden.':v.status===403?'Dieses Konto ist nicht für Reservierungen freigegeben.':'Login derzeit nicht verfügbar.'},v.status);
 }
 export async function GET(req:Request){const denied=await deny(req,false);if(denied)return denied;try{const db=database();const [rows,blocked]=await Promise.all([db.prepare('SELECT id,name,email,phone,date,time,guests,notes,status,table_ids,duration,created,updated FROM bookings ORDER BY date,time').all(),db.prepare("SELECT date FROM blocked_days WHERE owner='nea-1889'").all()]);return reply({reservations:rows.results,blocked:blocked.results})}catch{return reply({error:'Daten konnten nicht geladen werden.'},503)}}
-export async function POST(req:Request){const denied=await deny(req,true);if(denied)return denied;try{const parsed=reservationSchema().safeParse(await req.json());if(!parsed.success)return reply({error:'Bitte Angaben und Termin prüfen.'},400);const d=parsed.data;const now=new Date().toISOString();await database().prepare("INSERT INTO bookings (id,token_hash,name,email,phone,date,time,guests,notes,status,table_ids,duration,created,updated) VALUES (?,?,?,?,?,?,?,?,?,'pending','[]',75,?,?) ON CONFLICT(id) DO NOTHING").bind(d.requestId,'staff:'+crypto.randomUUID(),d.name,d.email,d.phone,d.date,d.time,d.guests,d.notes,now,now).run();const b=await database().prepare('SELECT * FROM bookings WHERE id=?').bind(d.requestId).first<Booking>();return reply(b,201)}catch{return reply({error:'Speichern nicht bestätigt. Bitte neu laden.'},503)}}
-export async function PATCH(req:Request){const denied=await deny(req,true);if(denied)return denied;try{const raw=await req.json();const edit=z.object({action:z.literal('edit'),id:z.string().uuid()}).safeParse(raw);if(edit.success){const data=reservationSchema().safeParse({...raw as Record<string,unknown>,requestId:edit.data.id});if(!data.success)return reply({error:'Bitte Angaben und neuen Termin prüfen.'},400);const d=data.data;const db=database();
+export async function POST(req:Request){const denied=await deny(req,true);if(denied)return denied;try{const body=await readJsonBody(req);if(!body.ok)return invalidBody(body.reason);const parsed=reservationSchema().safeParse(body.value);if(!parsed.success)return reply({error:'Bitte Angaben und Termin prüfen.'},400);const d=parsed.data;const now=new Date().toISOString();await database().prepare("INSERT INTO bookings (id,token_hash,name,email,phone,date,time,guests,notes,status,table_ids,duration,created,updated) VALUES (?,?,?,?,?,?,?,?,?,'pending','[]',75,?,?) ON CONFLICT(id) DO NOTHING").bind(d.requestId,'staff:'+crypto.randomUUID(),d.name,d.email,d.phone,d.date,d.time,d.guests,d.notes,now,now).run();const b=await database().prepare('SELECT * FROM bookings WHERE id=?').bind(d.requestId).first<Booking>();return reply(b,201)}catch{return reply({error:'Speichern nicht bestätigt. Bitte neu laden.'},503)}}
+export async function PATCH(req:Request){const denied=await deny(req,true);if(denied)return denied;try{const body=await readJsonBody(req);if(!body.ok)return invalidBody(body.reason);const raw=body.value;const edit=z.object({action:z.literal('edit'),id:z.string().uuid()}).safeParse(raw);if(edit.success){const data=reservationSchema().safeParse({...raw as Record<string,unknown>,requestId:edit.data.id});if(!data.success)return reply({error:'Bitte Angaben und neuen Termin prüfen.'},400);const d=data.data;const db=database();
  const columns=['name','email','phone','date','time','guests','notes','status','table_ids','updated'] as const;
  const existing=await db.prepare('SELECT '+columns.join(',')+' FROM bookings WHERE id=?').bind(edit.data.id).first<Pick<Booking,(typeof columns)[number]>>();
  if(!existing)return reply({error:'Reservierung nicht gefunden.'},404);
