@@ -53,7 +53,9 @@ export default function Login({supabaseUrl,supabaseKey,dashboard=false}:Props){
     email:address,
     options:{shouldCreateUser:false},
    });
-   if(err){
+   // Do not reveal whether an address belongs to an approved staff account.
+   // Only transport/server errors and request throttling interrupt the generic OTP screen.
+   if(err&&(err.status===429||!err.status||err.status>=500)){
     setError(err.status===429?'Zu viele Anfragen. Bitte später erneut versuchen.':'Code konnte nicht gesendet werden. Bitte später erneut versuchen.');
     return;
    }
