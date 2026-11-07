@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# No elevated tokens, Production secrets, deployments or remote database access.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Test, typecheck, build (Node 24 / PostgreSQL 17)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run tests against disposable PostgreSQL
+        # One test file at a time: integration fixtures initialize shared PG roles.
+        # The harness creates/drops throwaway databases on this local CI service.
+        env:
+          NEA_TEST_ADMIN_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+        run: node --test --test-concurrency=1 tests/*.test.cjs
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Production build (no database access)
+        run: npm run build
