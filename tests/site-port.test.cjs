@@ -24,11 +24,24 @@ test('reservation wizard submits to the authoritative API with an idempotency ke
   assert.ok(!/localStorage|loadReservations|saveReservations/.test(src));
 });
 
-test('selectable slots make no availability claim and all languages stay in sync',()=>{
+test('simulated availability labels stay out; wizard uses only the server availability loader',()=>{
   const dict=fs.readFileSync('lib/site/i18n-dict.ts','utf8');
+  const view=fs.readFileSync('app/(site)/reservierung/view.tsx','utf8');
   assert.ok(!/"st\.(available|few|full)"/.test(dict),'simulated availability labels must not exist');
-  assert.ok(!/st\.available|st\.few|st\.full/.test(fs.readFileSync('app/(site)/reservierung/view.tsx','utf8')));
+  assert.ok(!/st\.available|st\.few|st\.full/.test(view));
+  assert.match(view,/createAvailabilityLoader/);
+  assert.ok(!/api\/availability/.test(view),'the loader module owns the endpoint call');
+  assert.ok(!/localStorage|sessionStorage/.test(view));
   for(const key of ['st.past','r.noSlots','c.pending','r.demo','c.noMail'])assert.equal(dict.split(`"${key}"`).length-1,6,`${key} must exist once per language`);
+});
+
+test('availability wording exists once per language and stays advisory',()=>{
+  const dict=fs.readFileSync('lib/site/i18n-dict.ts','utf8');
+  const view=fs.readFileSync('app/(site)/reservierung/view.tsx','utf8');
+  const keys=['av.advisory','av.loading','av.error','av.retry','av.full','av.closed','av.allFull','av.dayClosed','av.unchecked'];
+  for(const key of keys){assert.equal(dict.split(`"${key}"`).length-1,6,`${key} must exist once per language`);assert.ok(view.includes(`"${key}"`),`${key} unused in wizard`)}
+  const {DICT}=(()=>{const m={exports:{}};const js=require('typescript').transpileModule(dict,{compilerOptions:{module:1,target:99}}).outputText;new Function('module','exports',js)(m,m.exports);return m.exports})();
+  for(const lang of Object.keys(DICT)){assert.equal(Object.keys(DICT[lang]).length,Object.keys(DICT.de).length,`${lang} key parity`);for(const k of keys)assert.ok(DICT[lang][k]&&DICT[lang][k].length>3,`${lang}.${k}`)}
 });
 
 test('every /brochure asset referenced by the site exists in public/',()=>{
