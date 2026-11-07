@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { DATE_LOCALES, useI18n } from "@/lib/site/i18n";
 import type { Key } from "@/lib/site/i18n-dict";
@@ -11,9 +11,11 @@ import { secureId } from "@/lib/client-id";
 import { berlinClock, isFutureSlot, maxTableMinutes, slotsForDate, tableEndTime } from "@/lib/reservation-rules";
 import { icsFor } from "@/lib/site/ics";
 import { errorKey } from "@/lib/guest-status";
+import { createAvailabilityLoader, summarize, type AvailabilityState } from "@/lib/site/availability-client";
 
 // The booking itself is server-authoritative: this wizard only collects input and POSTs it to /api/booking.
-// Slot availability shown here is advisory (opening hours and past times); the server revalidates everything.
+// Slot availability comes from the availability loader and is advisory only: nothing is held for the guest, and
+// the server revalidates every rule on submit and on staff confirmation.
 const MAX_ONLINE_GUESTS = 12;
 const STEPS: Key[] = ["s.guests", "s.date", "s.time", "s.details", "s.confirm"];
 
@@ -48,10 +50,41 @@ export default function ReservationPage() {
   const sending = useRef(false);
 
   const dateKey = date ? format(date, "yyyy-MM-dd") : "";
-  const slots = useMemo(
-    () => slotsForDate(dateKey).map((slot) => ({ slot, open: isFutureSlot(dateKey, slot) })),
-    [dateKey],
-  );
+  const [avail, setAvail] = useState<AvailabilityState>({ phase: "loading" });
+  const [retries, setRetries] = useState(0);
+  const loader = useRef<ReturnType<typeof createAvailabilityLoader> | null>(null);
+  useEffect(() => {
+    const l = createAvailabilityLoader(setAvail);
+    loader.current = l;
+    return () => { l.cancel(); loader.current = null; };
+  }, []);
+  // Newest selection wins: the loader aborts the previous request and ignores any late response.
+  useEffect(() => {
+    if (dateKey) loader.current?.load(dateKey, guests);
+  }, [dateKey, guests, retries]);
+
+  type SlotView = { slot: string; selectable: boolean; label?: Key };
+  const slots = useMemo<SlotView[]>(() => {
+    if (avail.phase === "ready") {
+      return avail.slots.map(({ time, status }) => ({
+        slot: time,
+        selectable: status === "available",
+        label: status === "past" ? "st.past" : status === "full" ? "av.full" : status === "closed" ? "av.closed" : undefined,
+      }));
+    }
+    // Loading: nothing selectable yet. Error: fall back to opening hours; the server still decides on submit.
+    return slotsForDate(dateKey).map((slot) => ({
+      slot,
+      selectable: avail.phase === "error" && isFutureSlot(dateKey, slot),
+      label: isFutureSlot(dateKey, slot) ? undefined : "st.past",
+    }));
+  }, [avail, dateKey]);
+  const summary = avail.phase === "ready" ? summarize(avail.slots) : undefined;
+
+  // A stale selection (e.g. a slot that is now full) must not stay selected.
+  useEffect(() => {
+    if (avail.phase === "ready" && time && avail.slots.find((x) => x.time === time)?.status !== "available") setTime(undefined);
+  }, [avail, time]);
 
   const submit = async () => {
     if (form.website) return; // honeypot
@@ -141,7 +174,7 @@ export default function ReservationPage() {
               <p className="font-serif-it text-muted-foreground">{t("r.howMany")}</p>
               <div className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-6">
                 {Array.from({ length: MAX_ONLINE_GUESTS }, (_, i) => i + 1).map((n) => (
-                  <button key={n} type="button" onClick={() => setGuests(n)} aria-pressed={guests === n}
+                  <button key={n} type="button" onClick={() => { setGuests(n); setTime(undefined); }} aria-pressed={guests === n}
                     className={`min-h-12 border border-ochre/60 font-display text-2xl ${guests === n ? "bg-blood text-plaster" : "bg-card hover:bg-ochre hover:text-soot"}`}>
                     {n}
                   </button>
@@ -176,16 +209,30 @@ export default function ReservationPage() {
               <p className="font-serif-it text-muted-foreground">
                 {format(date, "EEEE, d MMMM", { locale })} · {t("r.timeSub", { n: maxTableMinutes })}
               </p>
-              <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {slots.map(({ slot, open }) => (
-                  <button key={slot} type="button" disabled={!open} onClick={() => setTime(slot)} aria-pressed={time === slot}
-                    className={`border border-ochre/60 px-2 py-3 text-left ${time === slot ? "bg-blood text-plaster" : open ? "bg-card hover:bg-ochre hover:text-soot" : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"}`}>
+              <p className="mt-2 text-sm text-muted-foreground">{t("av.advisory")}</p>
+              <div role="status" aria-live="polite">
+                {avail.phase === "loading" && <p className="mt-3 text-sm font-semibold">{t("av.loading")}</p>}
+                {avail.phase === "error" && (
+                  <div className="mt-3 border border-destructive/60 p-3 text-sm">
+                    <p className="font-semibold text-destructive">{t("av.error")}</p>
+                    <p className="mt-1">{t("av.unchecked")}</p>
+                    <button type="button" onClick={() => setRetries((n) => n + 1)}
+                      className="mt-2 border border-ochre/60 bg-ochre px-4 py-2 font-display text-base text-soot">{t("av.retry")}</button>
+                  </div>
+                )}
+              </div>
+              <div aria-busy={avail.phase === "loading"} className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {slots.map(({ slot, selectable, label }) => (
+                  <button key={slot} type="button" disabled={!selectable} onClick={() => setTime(slot)} aria-pressed={time === slot}
+                    className={`border border-ochre/60 px-2 py-3 text-left ${time === slot ? "bg-blood text-plaster" : selectable ? "bg-card hover:bg-ochre hover:text-soot" : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"}`}>
                     <span className="block font-display text-2xl">{slot}</span>
-                    <span className="block text-xs">{t("r.until")} {tableEndTime(slot)}{open ? "" : ` · ${t("st.past")}`}</span>
+                    <span className="block text-xs">{t("r.until")} {tableEndTime(slot)}{label ? ` · ${t(label)}` : ""}</span>
                   </button>
                 ))}
               </div>
-              {slots.every((x) => !x.open) && <p className="mt-4 font-semibold text-destructive">{t("r.noSlots")}</p>}
+              {summary === "closed" && <p className="mt-4 font-semibold text-destructive">{t("av.dayClosed")}</p>}
+              {summary === "full" && <p className="mt-4 font-semibold text-destructive">{t("av.allFull")}</p>}
+              {(summary === "past" || summary === "empty") && <p className="mt-4 font-semibold text-destructive">{t("r.noSlots")}</p>}
             </div>
           )}
 
