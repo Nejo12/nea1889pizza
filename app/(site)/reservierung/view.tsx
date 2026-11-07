@@ -19,7 +19,7 @@ import { createAvailabilityLoader, summarize, type AvailabilityState } from "@/l
 const MAX_ONLINE_GUESTS = 12;
 const STEPS: Key[] = ["s.guests", "s.date", "s.time", "s.details", "s.confirm"];
 
-type Accepted = { name: string; date: string; time: string; guests: number; requestId: string; link: string };
+type Accepted = { name: string; date: string; time: string; guests: number; requestId: string; link: string; emailNotifications?: boolean };
 type Fields = "name" | "email" | "phone";
 
 function validate(form: { name: string; email: string; phone: string; notes: string; consent: boolean }, t: (k: Key) => string) {
@@ -109,7 +109,7 @@ export default function ReservationPage() {
           guests, date: dateKey, time, website: "", accepted: form.consent,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string; name?: string; date?: string; time?: string; guests?: number };
+      const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string; name?: string; date?: string; time?: string; guests?: number; emailNotifications?: boolean };
       if (!res.ok || !data.date || !data.time) {
         // Localize by the API's structured code; the German `error` text is only a compatibility fallback.
         setErrors({ form: t(data.code || data.error ? errorKey(data) : "e.send") });
@@ -117,7 +117,7 @@ export default function ReservationPage() {
       }
       setDone({
         name: data.name ?? form.name, date: data.date, time: data.time, guests: data.guests ?? guests,
-        requestId: key.current.requestId, link: `${location.origin}/reservation#${key.current.token}`,
+        emailNotifications: data.emailNotifications === true, requestId: key.current.requestId, link: `${location.origin}/reservation#${key.current.token}`,
       });
       setStep(4);
     } catch {
@@ -307,7 +307,7 @@ export default function ReservationPage() {
                   {t("c.ics")}
                 </button>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">{t("c.noMail")}</p>
+              <p className="mt-4 text-xs text-muted-foreground">{t(done.emailNotifications ? "c.mailSent" : "c.noMail")}</p>
             </div>
           )}
 

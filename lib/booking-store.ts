@@ -1,4 +1,5 @@
 import {database} from './staff';
+import {notifyReservation} from './email';
 import {restaurantTables,maxTableMinutes,slotsForDate,isFutureSlot} from './reservation-rules';
 export type Booking={id:string;token_hash:string;name:string;email:string;phone:string;date:string;time:string;guests:number;notes:string;status:string;table_ids:string;duration:number;created:string;updated:string};
 export async function hashToken(token:string){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
@@ -34,4 +35,6 @@ export async function updateBooking(id:string,status:string,tableIds:string[]){
  let results;
  try{results=await db.batch(commands)}catch{throw Error('Änderung nicht gespeichert. Ein Tisch ist möglicherweise bereits belegt. Bitte neu laden und prüfen.');}
  if(!results.at(-1)?.meta.changes)throw Error('Die Reservierung wurde zwischenzeitlich geändert. Bitte neu laden und prüfen.');
+ // Only after the change is committed, and only on a real transition: re-saving the same status sends nothing.
+ if(status!==b.status&&(status==='confirmed'||status==='cancelled'))await notifyReservation(status,b);
 }

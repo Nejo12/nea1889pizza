@@ -7,8 +7,8 @@ const SITE='https://nea1889.pizza',URL_='https://nea1889.pizza/api/booking';
 function fixture(){const sql=new DatabaseSync(':memory:');for(const f of fs.readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort())sql.exec(fs.readFileSync('drizzle/'+f,'utf8'));
  function prepare(query){let args=[];const s={bind(...v){args=v;return s},async first(){return sql.prepare(query).get(...args)||null},async all(){return{results:sql.prepare(query).all(...args)}},async run(){const r=sql.prepare(query).run(...args);return{meta:{changes:Number(r.changes)}}}};return s}
  let touched=0;const db={prepare(q){touched++;return prepare(q)},async batch(c){touched++;sql.exec('BEGIN');try{const r=[];for(const x of c)r.push(await x.run());sql.exec('COMMIT');return r}catch(e){sql.exec('ROLLBACK');throw e}}};
- const staff={database:()=>db,isStaff:async()=>false};const store=load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':rules});
- const api=load('app/api/booking/route.ts',{'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/reservation-rules':rules,'@/lib/request-security':security});
+ const staff={database:()=>db,isStaff:async()=>false};const store=load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':rules,'./email':require('./support/no-email.cjs')});
+ const api=load('app/api/booking/route.ts',{'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/email':require('./support/no-email.cjs'),'@/lib/reservation-rules':rules,'@/lib/request-security':security});
  return{api,sql,touched:()=>touched};}
 const tok=()=>(crypto.randomUUID()+crypto.randomUUID()).replaceAll('-','');
 const payload=(p={})=>({requestId:crypto.randomUUID(),token:tok(),name:'Test Gast',email:'t@example.com',phone:'+49 12345678',date:'2099-11-02',time:'19:00',guests:4,notes:'',website:'',accepted:true,...p});

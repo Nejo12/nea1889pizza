@@ -14,8 +14,8 @@ before(async()=>{
  process.env.DATABASE_URL=db.runtimeUrl;process.env.NEA_DATABASE_SCHEMA='nea';
  adapter=support.load('lib/database.ts',{postgres});
  rules=support.load('lib/reservation-rules.ts');
- store=support.load('lib/booking-store.ts',{'./staff':staffModule,'./reservation-rules':rules});
- process.env.AUTHORIZED_ORIGINS='https://test.example';const imports={'@/lib/staff':staffModule,'@/lib/booking-store':store,'@/lib/reservation-rules':rules,'@/lib/request-security':support.load('lib/request-security.ts',{'./trusted-origins':support.load('lib/trusted-origins.ts')})};
+ store=support.load('lib/booking-store.ts',{'./staff':staffModule,'./reservation-rules':rules,'./email':require('./support/no-email.cjs')});
+ process.env.AUTHORIZED_ORIGINS='https://test.example';const imports={'@/lib/staff':staffModule,'@/lib/booking-store':store,'@/lib/email':require('./support/no-email.cjs'),'@/lib/reservation-rules':rules,'@/lib/request-security':support.load('lib/request-security.ts',{'./trusted-origins':support.load('lib/trusted-origins.ts')})};
  api=support.load('app/api/booking/route.ts',imports);admin=support.load('app/api/reservations/route.ts',imports);
 });
 after(async()=>{if(skip)return;await db.drop();srv.stop();});
@@ -38,11 +38,11 @@ test('migration creates the schema, keys, indexes and unchanged column types',{s
  assert.equal(cols.find(c=>c.table_name==='bookings'&&c.column_name==='table_ids').column_default,"'[]'::text");
  assert.equal(cols.find(c=>c.table_name==='bookings'&&c.column_name==='duration').column_default,'75');
  const pks=await rows("SELECT conrelid::regclass::text t FROM pg_constraint WHERE contype='p' AND connamespace='nea'::regnamespace ORDER BY 1");
- assert.deepEqual(pks.map(r=>r.t),['nea.blocked_days','nea.bookings','nea.occupancy','nea.reservations','nea.staff_members']);
+ assert.deepEqual(pks.map(r=>r.t),['nea.blocked_days','nea.bookings','nea.email_events','nea.occupancy','nea.reservations','nea.staff_members']);
  const idx=(await rows("SELECT indexname FROM pg_indexes WHERE schemaname='nea'")).map(r=>r.indexname);
  for(const i of ['bookings_date_time','bookings_token','occupancy_booking'])assert.ok(idx.includes(i),i);
  const rls=await rows("SELECT relname,relrowsecurity FROM pg_class WHERE relnamespace='nea'::regnamespace AND relkind='r'");
- assert.ok(rls.length===5&&rls.every(r=>r.relrowsecurity));
+ assert.ok(rls.length===6&&rls.every(r=>r.relrowsecurity));
 });
 
 test('migration files are versioned, non-empty and contain no secrets',{skip},()=>{
@@ -270,4 +270,20 @@ test('quota: concurrent requests, confirmations and cancellations keep occupancy
  const occ=await rows("SELECT o.booking_id,b.status FROM nea.occupancy o JOIN nea.bookings b ON b.id=o.booking_id WHERE o.date=$1",date);
  assert.ok(occ.every(o=>o.status==='confirmed'));assert.equal(new Set(occ.map(o=>o.booking_id)).size<=1,true);
  assert.equal((await rows("SELECT count(*)::int n FROM nea.bookings WHERE date=$1 AND status='confirmed'",date))[0].n,occ.length?1:0);
+});
+
+test('email events on PostgreSQL: 8 concurrent notifications send once; failed events re-claim; runtime role cannot delete',{skip},async()=>{
+ const email=support.load('lib/email.ts',{'./staff':staffModule}),realFetch=globalThis.fetch;
+ let calls=0,fail=false;process.env.RESEND_API_KEY='re_test';process.env.EMAIL_FROM='NEA <a@example.test>';
+ globalThis.fetch=async()=>{calls++;await new Promise(r=>setTimeout(r,20));return fail?new Response('{}',{status:500}):new Response('{}',{status:200})};
+ try{
+  const b={id:crypto.randomUUID(),name:'Gast',email:'x@example.com',date:'2099-11-02',time:'19:00',guests:2};
+  const res=await Promise.all(Array.from({length:8},()=>email.notifyReservation('confirmed',b)));
+  assert.equal(calls,1);assert.equal(res.filter(r=>r==='sent').length,1);
+  assert.equal((await rows("SELECT status FROM nea.email_events WHERE id=$1",b.id+':confirmed'))[0].status,'sent');
+  fail=true;assert.equal(await email.notifyReservation('cancelled',b),'failed');assert.equal(calls,2);
+  fail=false;assert.equal(await email.notifyReservation('cancelled',b),'sent');assert.equal(await email.notifyReservation('cancelled',b),'skipped');assert.equal(calls,3);
+  const rt=postgres(db.runtimeUrl,{max:1,onnotice:()=>{}});
+  try{await assert.rejects(()=>rt.unsafe('DELETE FROM nea.email_events'),/permission denied/)}finally{await rt.end()}
+ }finally{globalThis.fetch=realFetch;delete process.env.RESEND_API_KEY;delete process.env.EMAIL_FROM}
 });

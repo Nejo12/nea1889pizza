@@ -8,8 +8,8 @@ test('PostgreSQL adapter: persistence, atomic conflicts, cancellation, parameter
  const adapter=load('lib/database.ts',{postgres:(_url,options)=>{assert.equal(options.connection?.search_path,undefined);return driver;}});
  assert.equal(adapter.parameterize("SELECT '?' AS x, ? AS y, 'don''t ?' AS z"),"SELECT '?' AS x, $1 AS y, 'don''t ?' AS z");
  const rules=load('lib/reservation-rules.ts'),staff={database:adapter.database,isStaff:async()=>true};
- process.env.AUTHORIZED_ORIGINS='https://test.example';const store=load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':rules});
- const api=load('app/api/booking/route.ts',{'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/reservation-rules':rules,'@/lib/request-security':load('lib/request-security.ts',{'./trusted-origins':load('lib/trusted-origins.ts')})});
+ process.env.AUTHORIZED_ORIGINS='https://test.example';const store=load('lib/booking-store.ts',{'./staff':staff,'./reservation-rules':rules,'./email':require('./support/no-email.cjs')});
+ const api=load('app/api/booking/route.ts',{'@/lib/staff':staff,'@/lib/booking-store':store,'@/lib/email':require('./support/no-email.cjs'),'@/lib/reservation-rules':rules,'@/lib/request-security':load('lib/request-security.ts',{'./trusted-origins':load('lib/trusted-origins.ts')})});
  const payload=()=>({requestId:crypto.randomUUID(),token:crypto.randomUUID().replaceAll('-','')+crypto.randomUUID().replaceAll('-',''),name:"O' Test",email:'test@example.com',phone:'+491234567',date:'2099-11-02',time:'19:00',guests:4,notes:'',accepted:true,website:''});
  const req=(p,method='POST')=>new Request('https://test.example/api/booking',{method,headers:{'Content-Type':'application/json',Origin:'https://test.example','X-Booking-Token':p.token},...(method==='POST'?{body:JSON.stringify(p)}:{})});
  const a=payload(),b=payload();assert.equal((await api.POST(req(a))).status,201);assert.equal((await api.POST(req(a))).status,200);assert.equal((await api.POST(req(b))).status,201);
