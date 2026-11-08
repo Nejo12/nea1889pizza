@@ -19,8 +19,10 @@ export async function availabilityFor(date:string,guests:number,now=new Date()):
   return {time,status:seats>=guests?'available' as const:'full' as const};
  });
 }
-export async function updateBooking(id:string,status:string,tableIds:string[]){
+// UI changes carry the revision originally shown to staff; internal callers can omit it.
+export async function updateBooking(id:string,status:string,tableIds:string[],expected?:{updated:string;status:string}){
  const db=database();const b=await db.prepare('SELECT * FROM bookings WHERE id=?').bind(id).first<Booking>();if(!b)throw Error('Reservierung nicht gefunden.');
+ if(expected&&(b.updated!==expected.updated||b.status!==expected.status))throw Error('Die Reservierung wurde zwischenzeitlich geändert. Bitte neu laden und prüfen.');
  const occupied=['confirmed','arrived'].includes(status);
  const valid=[...new Set(tableIds)];
  if(occupied){if(!valid.length||valid.some(id=>!restaurantTables.some(t=>t.name===id)))throw Error('Bitte gültige Tische auswählen.');const seats=valid.reduce((n,id)=>n+restaurantTables.find(t=>t.name===id)!.seats,0);if(seats<b.guests)throw Error('Die ausgewählten Tische haben zu wenige Plätze.');}
