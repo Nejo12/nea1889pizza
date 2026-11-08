@@ -44,3 +44,11 @@ test('Stale staff edits cannot overwrite a newer booking or release its table al
  assert.equal(current.time,'19:00');
  assert.equal(f.sql.prepare('SELECT count(*) AS n FROM occupancy WHERE booking_id=?').get(p.requestId).n,5);
 });
+
+test('booking revisions advance even when multiple staff writes happen within the same millisecond',()=>{
+ const f=fixture(),now=Date.parse('2026-11-08T01:00:00.000Z');
+ const first=f.store.nextBookingRevision(new Date(now).toISOString(),now);
+ assert.equal(first,new Date(now+1).toISOString());
+ assert.equal(f.store.nextBookingRevision(first,now),new Date(now+2).toISOString());
+ assert.equal(f.store.nextBookingRevision(new Date(now-1000).toISOString(),now),new Date(now).toISOString());
+});
