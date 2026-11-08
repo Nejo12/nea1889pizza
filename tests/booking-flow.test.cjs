@@ -52,3 +52,29 @@ test('booking revisions advance even when multiple staff writes happen within th
  assert.equal(f.store.nextBookingRevision(first,now),new Date(now+2).toISOString());
  assert.equal(f.store.nextBookingRevision(new Date(now-1000).toISOString(),now),new Date(now).toISOString());
 });
+
+
+test('staff reservation listing is day-scoped and never exposes other dates or historical guest PII',async()=>{
+ const f=fixture();
+ const first=payload({date:'2099-11-02',name:'Today Guest',email:'today@example.test'});
+ const second=payload({date:'2099-11-03',name:'Other Day Guest',email:'other@example.test'});
+ assert.equal((await f.publicApi.POST(request(first))).status,201);
+ assert.equal((await f.publicApi.POST(request(second))).status,201);
+ f.setStaff(true);
+ const get=day=>f.admin.GET(new Request('https://example.test/api/reservations'+(day?'?date='+day:'')));
+ for(const day of ['', 'invalid', '2099-02-30','2099-11-02&date=2099-11-03']){
+  const response=await get(day);
+  assert.equal(response.status,400,day);
+  assert.equal(response.headers.get('Cache-Control'),'no-store');
+ }
+ const r=await get('2099-11-02');
+ assert.equal(r.status,200);
+ const data=await r.json();
+ assert.equal(data.reservations.length,1);
+ assert.equal(data.reservations[0].name,'Today Guest');
+ assert.equal(data.reservations[0].date,'2099-11-02');
+ assert.doesNotMatch(JSON.stringify(data),/Other Day Guest|other@example\.test/);
+ const next=await(await get('2099-11-03')).json();
+ assert.equal(next.reservations.length,1);
+ assert.equal(next.reservations[0].id,second.requestId);
+});
