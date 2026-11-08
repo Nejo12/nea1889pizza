@@ -2,6 +2,11 @@ import {database} from './staff';
 import {notifyReservation} from './email';
 import {restaurantTables,maxTableMinutes,slotsForDate,isFutureSlot} from './reservation-rules';
 export type Booking={id:string;token_hash:string;name:string;email:string;phone:string;date:string;time:string;guests:number;notes:string;status:string;table_ids:string;duration:number;created:string;updated:string};
+// Always advance the browser-visible revision, including successive writes in the same millisecond.
+export function nextBookingRevision(previous:string,now=Date.now()){
+ const previousMs=Date.parse(previous);
+ return new Date(Math.max(now,Number.isFinite(previousMs)?previousMs+1:now)).toISOString();
+}
 export async function hashToken(token:string){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 export function publicBooking(b:Booking){return {id:b.id,name:b.name,date:b.date,time:b.time,guests:b.guests,status:b.status,duration:b.duration,updated:b.updated};}
 export function slotKeys(date:string,time:string,tables:string[]){const start=Number(time.slice(0,2))*60+Number(time.slice(3));return tables.flatMap(tableId=>Array.from({length:maxTableMinutes/15},(_,i)=>({id:`${date}:${tableId}:${start+i*15}`,tableId,date,minute:start+i*15})));}
@@ -32,7 +37,7 @@ export async function updateBooking(id:string,status:string,tableIds:string[],ex
  const state=[id,b.status,b.date,b.time,b.guests,b.updated] as const;
  const commands=[db.prepare('DELETE FROM occupancy WHERE booking_id=? AND '+unchanged).bind(id,...state)];
  if(occupied)for(const slot of slotKeys(b.date,b.time,valid))commands.push(db.prepare('INSERT INTO occupancy (id,booking_id,table_id,date,minute) SELECT ?,?,?,?,? WHERE '+unchanged).bind(slot.id,id,slot.tableId,slot.date,slot.minute,...state));
- commands.push(db.prepare('UPDATE bookings SET status=?,table_ids=?,updated=? WHERE id=? AND status=? AND date=? AND time=? AND guests=? AND updated=?').bind(status,JSON.stringify(occupied?valid:[]),new Date().toISOString(),id,b.status,b.date,b.time,b.guests,b.updated));
+ commands.push(db.prepare('UPDATE bookings SET status=?,table_ids=?,updated=? WHERE id=? AND status=? AND date=? AND time=? AND guests=? AND updated=?').bind(status,JSON.stringify(occupied?valid:[]),nextBookingRevision(b.updated),id,b.status,b.date,b.time,b.guests,b.updated));
  // PostgreSQL transaction is atomic; unique occupancy keys reject overlapping confirmations.
  let results;
  try{results=await db.batch(commands)}catch{throw Error('Änderung nicht gespeichert. Ein Tisch ist möglicherweise bereits belegt. Bitte neu laden und prüfen.');}
