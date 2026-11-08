@@ -27,6 +27,7 @@ const create=async patch=>{const p=payload(patch);assert.equal((await api.POST(r
 const rows=async(sql,...a)=>db.admin.unsafe(sql,a);
 const occupancyOf=async id=>(await rows('SELECT count(*)::int n FROM nea.occupancy WHERE booking_id=$1',id))[0].n;
 const statusOf=async id=>(await rows('SELECT status FROM nea.bookings WHERE id=$1',id))[0].status;
+const revision=async id=>(await rows('SELECT updated,status FROM nea.bookings WHERE id=$1',id))[0];
 
 test('migration creates the schema, keys, indexes and unchanged column types',{skip},async()=>{
  const cols=await rows("SELECT table_name,column_name,data_type,is_nullable,column_default FROM information_schema.columns WHERE table_schema='nea' ORDER BY table_name,ordinal_position");
@@ -142,7 +143,8 @@ async function frozenConfirm(id,tables){ // starts a confirm, pauses after its r
 test('edit versus confirm: a confirm based on the pre-edit booking is rejected',{skip},async()=>{
  const p=await create({date:'2099-12-07'});
  const f=await frozenConfirm(p.requestId,['Tisch 1']);
- assert.equal((await admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,date:'2099-12-08',time:'20:00'}))).status,200);
+ const before=await revision(p.requestId);
+ assert.equal((await admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,expectedUpdated:before.updated,expectedStatus:before.status,date:'2099-12-08',time:'20:00'}))).status,200);
  f.release();const out=await f.promise;
  assert.equal(out.ok,false);assert.match(out.error,/geändert/);
  assert.equal(await occupancyOf(p.requestId),0);
@@ -158,7 +160,8 @@ test('cancel versus confirm: a cancelled booking is never resurrected',{skip},as
 test('randomised edit/confirm/cancel races never leave occupancy that disagrees with the booking',{skip},async()=>{
  for(let i=0;i<12;i++){
   const p=await create({date:'2099-12-10'});
-  await Promise.allSettled([store.updateBooking(p.requestId,'confirmed',['Tisch 2']),admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,time:'20:00'})),api.PATCH(req(p,'PATCH'))]);
+  const before=await revision(p.requestId);
+  await Promise.allSettled([store.updateBooking(p.requestId,'confirmed',['Tisch 2']),admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,expectedUpdated:before.updated,expectedStatus:before.status,time:'20:00'})),api.PATCH(req(p,'PATCH'))]);
  }
  const bad=await rows(`SELECT b.id FROM nea.bookings b WHERE b.date='2099-12-10' AND (
    (b.status IN ('confirmed','arrived') AND (SELECT count(*) FROM nea.occupancy o WHERE o.booking_id=b.id AND o.date=b.date)<>5)
@@ -286,4 +289,40 @@ test('email events on PostgreSQL: 8 concurrent notifications send once; failed e
   const rt=postgres(db.runtimeUrl,{max:1,onnotice:()=>{}});
   try{await assert.rejects(()=>rt.unsafe('DELETE FROM nea.email_events'),/permission denied/)}finally{await rt.end()}
  }finally{globalThis.fetch=realFetch;delete process.env.RESEND_API_KEY;delete process.env.EMAIL_FROM}
+});
+
+
+test('stale staff browser snapshot cannot release confirmed occupancy or overwrite a newer status',{skip},async()=>{
+ const p=await create({date:'2099-12-20'});
+ const before=await revision(p.requestId);
+ assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'confirmed',tableIds:['Tisch 1']}))).status,400);
+ assert.equal((await admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,time:'20:00'}))).status,400);
+ await store.updateBooking(p.requestId,'confirmed',['Tisch 1']);
+ assert.equal((await admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,time:'20:00',expectedUpdated:before.updated,expectedStatus:before.status}))).status,409);
+ assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'cancelled',tableIds:[],expectedUpdated:before.updated,expectedStatus:before.status}))).status,409);
+ assert.equal(await statusOf(p.requestId),'confirmed');
+ assert.equal(await occupancyOf(p.requestId),5);
+ const current=await revision(p.requestId);
+ assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'arrived',tableIds:['Tisch 1'],expectedUpdated:current.updated,expectedStatus:current.status}))).status,200);
+ assert.equal(await statusOf(p.requestId),'arrived');
+ assert.equal(await occupancyOf(p.requestId),5);
+});
+test('staff browser snapshots also reject stale edits with unchanged booking status',{skip},async()=>{
+ const p=await create({date:'2099-12-21'});
+ const before=await revision(p.requestId);
+ await rows("UPDATE nea.bookings SET notes='Andere Änderung',updated='2099-01-01T00:00:00.001Z' WHERE id=$1",p.requestId);
+ const response=await admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,notes:'Veralteter Text',expectedUpdated:before.updated,expectedStatus:before.status}));
+ assert.equal(response.status,409);
+ const [current]=await rows('SELECT notes,status,updated FROM nea.bookings WHERE id=$1',p.requestId);
+ assert.equal(current.notes,'Andere Änderung');
+ assert.equal(current.status,'pending');
+ assert.equal(current.updated,'2099-01-01T00:00:00.001Z');
+});
+test('guest cancellation before a staff confirmation rejects the stale dashboard action',{skip},async()=>{
+ const p=await create({date:'2099-12-22'});
+ const before=await revision(p.requestId);
+ assert.equal((await api.PATCH(req(p,'PATCH'))).status,200);
+ assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'confirmed',tableIds:['Tisch 3'],expectedUpdated:before.updated,expectedStatus:before.status}))).status,409);
+ assert.equal(await statusOf(p.requestId),'cancelled');
+ assert.equal(await occupancyOf(p.requestId),0);
 });
