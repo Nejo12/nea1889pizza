@@ -326,3 +326,20 @@ test('guest cancellation before a staff confirmation rejects the stale dashboard
  assert.equal(await statusOf(p.requestId),'cancelled');
  assert.equal(await occupancyOf(p.requestId),0);
 });
+
+
+test('staff GET uses an indexed day filter and excludes private data from other dates',{skip},async()=>{
+ const first=await create({date:'2099-12-23',name:'Listed Day Guest',email:'listed@example.test'});
+ const second=await create({date:'2099-12-24',name:'Unrelated Day Guest',email:'other-day@example.test'});
+ const list=async date=>admin.GET(new Request('https://test.example/api/reservations'+(date===null?'':'?date='+date)));
+ for(const invalid of [null,'2099-02-30','2099-12-23&date=2099-12-24']){
+  const denied=await list(invalid);assert.equal(denied.status,400);assert.equal(denied.headers.get('Cache-Control'),'no-store');
+ }
+ const response=await list('2099-12-23');assert.equal(response.status,200);
+ const body=await response.json();
+ assert.deepEqual(body.reservations.map(b=>b.id),[first.requestId]);
+ assert.equal(body.reservations[0].name,'Listed Day Guest');
+ assert.doesNotMatch(JSON.stringify(body),/Unrelated Day Guest|other-day@example\.test/);
+ const next=await(await list('2099-12-24')).json();
+ assert.deepEqual(next.reservations.map(b=>b.id),[second.requestId]);
+});
