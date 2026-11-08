@@ -295,15 +295,15 @@ test('email events on PostgreSQL: 8 concurrent notifications send once; failed e
 test('stale staff browser snapshot cannot release confirmed occupancy or overwrite a newer status',{skip},async()=>{
  const p=await create({date:'2099-12-20'});
  const before=await revision(p.requestId);
- assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'confirmed',tableIds:['Tisch 3']}))).status,400);
+ assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'confirmed',tableIds:['Tisch 1']}))).status,400);
  assert.equal((await admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,time:'20:00'}))).status,400);
- await store.updateBooking(p.requestId,'confirmed',['Tisch 3']);
+ await store.updateBooking(p.requestId,'confirmed',['Tisch 1']);
  assert.equal((await admin.PATCH(staffReq({...p,action:'edit',id:p.requestId,time:'20:00',expectedUpdated:before.updated,expectedStatus:before.status}))).status,409);
  assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'cancelled',tableIds:[],expectedUpdated:before.updated,expectedStatus:before.status}))).status,409);
  assert.equal(await statusOf(p.requestId),'confirmed');
  assert.equal(await occupancyOf(p.requestId),5);
  const current=await revision(p.requestId);
- assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'arrived',tableIds:['Tisch 3'],expectedUpdated:current.updated,expectedStatus:current.status}))).status,200);
+ assert.equal((await admin.PATCH(staffReq({id:p.requestId,status:'arrived',tableIds:['Tisch 1'],expectedUpdated:current.updated,expectedStatus:current.status}))).status,200);
  assert.equal(await statusOf(p.requestId),'arrived');
  assert.equal(await occupancyOf(p.requestId),5);
 });
