@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import {database,staffFromRequest} from '@/lib/staff';
 import {checkRequestOrigin,readJsonBody} from '@/lib/request-security';
-import {Booking,updateBooking} from '@/lib/booking-store';
+import {Booking,nextBookingRevision,updateBooking} from '@/lib/booking-store';
 import {blockSchema,statusSchema,reservationSchema} from '@/lib/reservation-rules';
 export const dynamic='force-dynamic';
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
@@ -29,7 +29,7 @@ export async function PATCH(req:Request){const denied=await deny(req,true);if(de
  const snapshot=columns.map(column=>existing[column]);
  const results=await db.batch([
   db.prepare('DELETE FROM occupancy WHERE booking_id=? AND EXISTS (SELECT 1 FROM bookings WHERE id=? AND '+unchanged+')').bind(edit.data.id,edit.data.id,...snapshot),
-  db.prepare("UPDATE bookings SET name=?,email=?,phone=?,date=?,time=?,guests=?,notes=?,status='pending',table_ids='[]',updated=? WHERE id=? AND "+unchanged).bind(d.name,d.email,d.phone,d.date,d.time,d.guests,d.notes,new Date().toISOString(),edit.data.id,...snapshot)
+  db.prepare("UPDATE bookings SET name=?,email=?,phone=?,date=?,time=?,guests=?,notes=?,status='pending',table_ids='[]',updated=? WHERE id=? AND "+unchanged).bind(d.name,d.email,d.phone,d.date,d.time,d.guests,d.notes,nextBookingRevision(existing.updated),edit.data.id,...snapshot)
  ]);
  if(!results[1]?.meta.changes)return reply({error:'Die Reservierung wurde zwischenzeitlich geändert. Bitte neu laden und prüfen.'},409);
  return reply({ok:true})}const b=blockSchema.safeParse(raw);if(b.success){const db=database();const id='nea-1889:'+b.data.date;if(b.data.action==='block')await db.prepare("INSERT INTO blocked_days(id,owner,date) VALUES (?,'nea-1889',?) ON CONFLICT(id) DO NOTHING").bind(id,b.data.date).run();else await db.prepare("DELETE FROM blocked_days WHERE id=? AND owner='nea-1889'").bind(id).run();return reply({ok:true})}const p=statusSchema.extend({tableIds:z.array(z.string()).max(20).default([]),expectedUpdated:z.string().min(1).max(64),expectedStatus:statusSchema.shape.status}).safeParse(raw);if(!p.success)return reply({error:'Ungültige Angaben.'},400);await updateBooking(p.data.id,p.data.status,p.data.tableIds,{updated:p.data.expectedUpdated,status:p.data.expectedStatus});return reply({ok:true})}catch(e){return reply({error:e instanceof Error?e.message:'Änderung fehlgeschlagen.'},409)}}
