@@ -1,6 +1,7 @@
 // UI translations. Italian culinary terms (dish names, section titles like "La Nostra Visione",
 // Pranzo/Cena) intentionally stay Italian in every language.
 const de = {
+  "nav.about": "Über uns",
   lang: "Sprache",
   "nav.home": "Home",
   "nav.menu": "Menu",
@@ -146,6 +147,7 @@ export type Key = keyof typeof de;
 type Dict = Record<Key, string>;
 
 const en: Dict = {
+  "nav.about": "About us",
   lang: "Language",
   "nav.home": "Home", "nav.menu": "Menu", "nav.book": "Book a table", "nav.bookShort": "Book",
   "nav.open": "Open menu", "nav.close": "Close menu", "nav.main": "Main navigation",
@@ -248,6 +250,7 @@ const en: Dict = {
 };
 
 const it: Dict = {
+  "nav.about": "Chi siamo",
   lang: "Lingua",
   "nav.home": "Home", "nav.menu": "Menu", "nav.book": "Prenota", "nav.bookShort": "Prenota",
   "nav.open": "Apri menu", "nav.close": "Chiudi menu", "nav.main": "Navigazione principale",
@@ -350,6 +353,7 @@ const it: Dict = {
 };
 
 const fr: Dict = {
+  "nav.about": "À propos",
   lang: "Langue",
   "nav.home": "Accueil", "nav.menu": "Menu", "nav.book": "Réserver", "nav.bookShort": "Réserver",
   "nav.open": "Ouvrir le menu", "nav.close": "Fermer le menu", "nav.main": "Navigation principale",
@@ -452,6 +456,7 @@ const fr: Dict = {
 };
 
 const es: Dict = {
+  "nav.about": "Nosotros",
   lang: "Idioma",
   "nav.home": "Inicio", "nav.menu": "Carta", "nav.book": "Reservar", "nav.bookShort": "Reservar",
   "nav.open": "Abrir menú", "nav.close": "Cerrar menú", "nav.main": "Navegación principal",
@@ -554,6 +559,7 @@ const es: Dict = {
 };
 
 const pt: Dict = {
+  "nav.about": "Sobre nós",
   lang: "Idioma",
   "nav.home": "Início", "nav.menu": "Menu", "nav.book": "Reservar", "nav.bookShort": "Reservar",
   "nav.open": "Abrir menu", "nav.close": "Fechar menu", "nav.main": "Navegação principal",

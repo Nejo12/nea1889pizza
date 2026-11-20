@@ -152,7 +152,7 @@ export default function ReservationPage() {
   const today = berlinClock().date;
 
   return (
-    <SiteLayout>
+    <SiteLayout bg="rm">
       <section className="mx-auto max-w-3xl px-4 py-12">
         <p className="font-serif-it text-xl text-ochre">Prenota il tuo tavolo</p>
         <h1 className="font-display text-[clamp(2.2rem,9vw,6rem)] break-words text-plaster">{t("r.title")}</h1>

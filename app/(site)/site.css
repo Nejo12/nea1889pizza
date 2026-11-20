@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "./";
 @source "../../components/site";
+@source "../../lib/site";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -323,4 +324,37 @@ html { scroll-behavior: smooth; }
   .reveal { opacity: 1; transform: none; filter: none; transition: none; }
   .cat-ind, .menu-row::after { transition: none; }
   html { scroll-behavior: auto; }
+}
+
+/* Video homepage */
+.home-video { animation: home-zoom 2.4s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes home-zoom { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+.home-title { animation: home-rise 1.4s .3s cubic-bezier(.2,.8,.2,1) both; }
+.home-link { animation: home-rise 1.1s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(.9s + var(--i) * .18s); }
+.home-emblem { animation: home-spin 24s linear infinite; }
+@keyframes home-rise { from { opacity: 0; transform: translateY(18px); filter: blur(6px); } }
+@keyframes home-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .home-video, .home-title, .home-link, .home-emblem { animation: none; } }
+
+/* Homepage scroll story */
+.story-in { opacity: 0; transform: translateY(60px) scale(0.94); clip-path: inset(12% 6% 12% 6% round 6px); filter: blur(6px);
+  transition: opacity 1s cubic-bezier(.2,.8,.2,1), transform 1.3s cubic-bezier(.2,.8,.2,1), clip-path 1.4s cubic-bezier(.2,.8,.2,1), filter 1s ease; }
+.story-in[data-shown] { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 0px); filter: none; }
+.scroll-cue { animation: cue 2s ease-in-out infinite; }
+@keyframes cue { 0%,100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(8px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .story-in { opacity: 1; transform: none; clip-path: none; filter: none; transition: none; } .scroll-cue { animation: none; } }
+
+/* Home story chapters (brochure pages 2–6) */
+@utility font-cond { font-family: "Barlow Condensed", "Archivo Narrow", sans-serif; font-weight: 400; letter-spacing: 0.01em; }
+@utility font-mono-ed { font-family: "Space Mono", ui-monospace, monospace; }
+.rv { opacity: 0; transform: translateY(28px); filter: blur(6px);
+  transition: opacity .9s cubic-bezier(.2,.8,.2,1), transform 1.1s cubic-bezier(.2,.8,.2,1), filter .9s ease; transition-delay: var(--d, 0ms); }
+.rv[data-shown] { opacity: 1; transform: none; filter: none; }
+.story-photo.rv { transform: translateY(40px) rotate(calc(var(--r, 0deg) * 2)) scale(.94); }
+.story-photo.rv[data-shown] { transform: rotate(var(--r, 0deg)); }
+.story-zoom > img, .story-zoom > video { transform: scale(1.12); transition: transform 2.4s cubic-bezier(.2,.8,.2,1); }
+section[data-shown] .story-zoom > img, section[data-shown] .story-zoom > video { transform: scale(1); }
+@media (prefers-reduced-motion: reduce) {
+  .rv, .story-photo.rv { opacity: 1; transform: none; filter: none; transition: none; }
+  .story-zoom > img, .story-zoom > video { transform: none; transition: none; }
 }
