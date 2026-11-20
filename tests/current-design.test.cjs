@@ -46,7 +46,7 @@ test('current video homepage renders the supplied story and working reservation/
 
 test('current reservation styling wraps the real server-backed wizard, not the exported localStorage demo',()=>{
  const html=renderer()('app/(site)/reservierung/view.tsx');
- assert.match(html,/rm_background-1366\.webp/);
+ assert.match(html,/\/email\/rm-background-0e7d40b0\.jpg/);
  assert.match(html,/Quanti siete/);
  assert.equal((html.match(/aria-pressed="(?:true|false)"/g)||[]).length,12);
  assert.match(html,/href="\/login"/);
@@ -83,4 +83,16 @@ test('production reservation copy never describes browser-only demo bookings in 
  const wizard=fs.readFileSync('app/(site)/reservierung/view.tsx','utf8');
  assert.match(wizard,/done.emailNotifications \? "c.mailSent" : "c.noMail"/);
  assert.match(wizard,/t\("r.requestNotice"\)/);
+});
+
+
+test('reservation background is the supplied local image, independent of Lovable publishing',()=>{
+ const crypto=require('node:crypto');
+ const source=fs.readFileSync('components/site/SiteChrome.tsx','utf8');
+ const matches=[...source.matchAll(/const rmBg(?:Sm)? = \{ url: "([^"]+)"/g)];
+ assert.equal(matches.length,2);
+ for(const match of matches){
+  assert.equal(match[1],'/email/rm-background-0e7d40b0.jpg');
+  assert.equal(crypto.createHash('sha256').update(fs.readFileSync('public'+match[1])).digest('hex'),'0e7d40b094aac7a2293ccfa12c12b62e7a54f395d8a0f3e6bc0233f02f54948f');
+ }
 });
