@@ -22,7 +22,7 @@ export default function SiteRootLayout({ children }: Readonly<{ children: ReactN
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,500;1,400;1,600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Barlow+Condensed:wght@300;400&family=Space+Mono&family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,500;1,400;1,600&display=swap"
         />
       </head>
       <body>

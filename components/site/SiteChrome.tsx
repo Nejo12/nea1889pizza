@@ -8,19 +8,23 @@ import { LanguageDropdown, LanguageTiles } from "./LanguageSwitcher";
 import type { Key } from "@/lib/site/i18n-dict";
 const marble = "/brochure/marble-1920.webp";
 const marbleSm = "/brochure/marble-mobile.webp";
+const rmBg = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/6ce4f5b3-d29c-4f1a-9dfc-8cfdc3cc0ecc/rm_background-1366.webp" };
+const rmBgSm = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/8ff1678d-6e00-4b89-a894-36b320c4e7f7/rm_background-768.webp" };
 const emblem = "/brochure/emblem-160.webp";
 
 const nav = [
   { to: "/", label: "nav.home" },
+  { to: "/about", label: "nav.about" },
   { to: "/menu", label: "nav.menu" },
   { to: "/reservierung", label: "nav.book" },
 ] as const satisfies readonly { to: string; label: Key }[];
 
+const rmStyle = { "--marble-url": `url(${rmBg.url})`, "--marble-url-sm": `url(${rmBgSm.url})` } as CSSProperties;
 export const marbleStyle = { "--marble-url": `url(${marble})`, "--marble-url-sm": `url(${marbleSm})` } as CSSProperties;
 
 function SiteHeader() {
-  const { t } = useI18n();
   const pathname = usePathname();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
@@ -103,11 +107,11 @@ function useLangFade() {
   return ref;
 }
 
-export function SiteLayout({ children }: { children: ReactNode }) {
+export function SiteLayout({ children, bg }: { children: ReactNode; bg?: "rm" }) {
   const { t } = useI18n();
   const mainRef = useLangFade();
   return (
-    <div style={marbleStyle} className="marble flex min-h-screen flex-col text-foreground">
+    <div style={bg === "rm" ? rmStyle : marbleStyle} className="marble flex min-h-screen flex-col text-foreground">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:p-2">
         {t("skip")}
       </a>
@@ -132,7 +136,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
           <ul className="space-y-1 text-sm">
             <li><Link href="/impressum" className="hover:text-ochre">{t("footer.imprint")}</Link></li>
             <li><Link href="/datenschutz" className="hover:text-ochre">{t("footer.privacy")}</Link></li>
-            <li><Link href="/login"className="hover:text-ochre">Staff Login</Link></li>
+            <li><Link href="/login" className="hover:text-ochre">Staff Login</Link></li>
           </ul>
         </div>
         <p className="border-t border-ochre/20 py-3 text-center font-display text-[11px] tracking-[0.35em] text-ochre">

@@ -60,7 +60,7 @@ export default function StatusPage() {
   const tone = booking?.status === "confirmed" || booking?.status === "arrived" ? "gulf" : booking?.status === "pending" ? "ochre" : "blood";
 
   return (
-    <SiteLayout>
+    <SiteLayout bg="rm">
       <section className="mx-auto max-w-2xl px-4 py-12">
         <p className="font-serif-it text-xl text-ochre">NEA 1889 · Zimmerstraße 26/27</p>
         <h1 className="font-display text-[clamp(2.2rem,9vw,5rem)] break-words text-plaster">{t("rs.title")}</h1>

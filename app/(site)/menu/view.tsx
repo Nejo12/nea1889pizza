@@ -60,7 +60,7 @@ export default function MenuPage() {
   }, [active, lang]);
 
   return (
-    <SiteLayout>
+    <SiteLayout bg="rm">
       <section className="mx-auto max-w-5xl px-4 py-14">
         <div data-reveal className="reveal">
           <p className="font-serif-it text-xl text-ochre">La carta · 1.21</p>

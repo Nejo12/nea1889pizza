@@ -1,6 +1,7 @@
 // UI translations. Italian culinary terms (dish names, section titles like "La Nostra Visione",
 // Pranzo/Cena) intentionally stay Italian in every language.
 const de = {
+  "nav.about": "Über uns",
   lang: "Sprache",
   "nav.home": "Home",
   "nav.menu": "Menu",
@@ -56,7 +57,7 @@ const de = {
   "menu.cats": "Kategorien",
 
   "r.title": "Reservierung",
-  "r.demo": "Persönlich bestätigt – deine Anfrage ist erst nach unserer Bestätigung verbindlich.",
+  "r.requestNotice": "Persönlich bestätigt – deine Anfrage ist erst nach unserer Bestätigung verbindlich.",
   "r.progress": "Fortschritt",
   "s.guests": "Gäste",
   "s.date": "Datum",
@@ -146,6 +147,7 @@ export type Key = keyof typeof de;
 type Dict = Record<Key, string>;
 
 const en: Dict = {
+  "nav.about": "About us",
   lang: "Language",
   "nav.home": "Home", "nav.menu": "Menu", "nav.book": "Book a table", "nav.bookShort": "Book",
   "nav.open": "Open menu", "nav.close": "Close menu", "nav.main": "Main navigation",
@@ -183,7 +185,7 @@ const en: Dict = {
   "menu.sample": "Sample menu – dishes & prices to be confirmed. Allergens on request.",
   "menu.cats": "Categories",
   "r.title": "Reservation",
-  "r.demo": "Personally confirmed – your request is only binding once we confirm it.",
+  "r.requestNotice": "Personally confirmed – your request is only binding once we confirm it.",
   "r.progress": "Progress",
   "s.guests": "Guests", "s.date": "Date", "s.time": "Time", "s.details": "Details", "s.confirm": "Confirmation",
   "r.howMany": "How many guests?",
@@ -248,6 +250,7 @@ const en: Dict = {
 };
 
 const it: Dict = {
+  "nav.about": "Chi siamo",
   lang: "Lingua",
   "nav.home": "Home", "nav.menu": "Menu", "nav.book": "Prenota", "nav.bookShort": "Prenota",
   "nav.open": "Apri menu", "nav.close": "Chiudi menu", "nav.main": "Navigazione principale",
@@ -285,7 +288,7 @@ const it: Dict = {
   "menu.sample": "Menu di esempio – piatti e prezzi da confermare. Allergeni su richiesta.",
   "menu.cats": "Categorie",
   "r.title": "Prenotazione",
-  "r.demo": "Confermata di persona – la richiesta è vincolante solo dopo la nostra conferma.",
+  "r.requestNotice": "Confermata di persona – la richiesta è vincolante solo dopo la nostra conferma.",
   "r.progress": "Avanzamento",
   "s.guests": "Ospiti", "s.date": "Data", "s.time": "Orario", "s.details": "Dati", "s.confirm": "Conferma",
   "r.howMany": "Quanti ospiti?",
@@ -350,6 +353,7 @@ const it: Dict = {
 };
 
 const fr: Dict = {
+  "nav.about": "À propos",
   lang: "Langue",
   "nav.home": "Accueil", "nav.menu": "Menu", "nav.book": "Réserver", "nav.bookShort": "Réserver",
   "nav.open": "Ouvrir le menu", "nav.close": "Fermer le menu", "nav.main": "Navigation principale",
@@ -387,7 +391,7 @@ const fr: Dict = {
   "menu.sample": "Carte d'exemple – plats et prix à confirmer. Allergènes sur demande.",
   "menu.cats": "Catégories",
   "r.title": "Réservation",
-  "r.demo": "Confirmée personnellement – la demande n'est ferme qu'après notre confirmation.",
+  "r.requestNotice": "Confirmée personnellement – la demande n'est ferme qu'après notre confirmation.",
   "r.progress": "Progression",
   "s.guests": "Convives", "s.date": "Date", "s.time": "Heure", "s.details": "Coordonnées", "s.confirm": "Confirmation",
   "r.howMany": "Combien de convives ?",
@@ -452,6 +456,7 @@ const fr: Dict = {
 };
 
 const es: Dict = {
+  "nav.about": "Nosotros",
   lang: "Idioma",
   "nav.home": "Inicio", "nav.menu": "Carta", "nav.book": "Reservar", "nav.bookShort": "Reservar",
   "nav.open": "Abrir menú", "nav.close": "Cerrar menú", "nav.main": "Navegación principal",
@@ -489,7 +494,7 @@ const es: Dict = {
   "menu.sample": "Carta de ejemplo – platos y precios por confirmar. Alérgenos bajo petición.",
   "menu.cats": "Categorías",
   "r.title": "Reserva",
-  "r.demo": "Confirmación personal – la solicitud solo es vinculante tras nuestra confirmación.",
+  "r.requestNotice": "Confirmación personal – la solicitud solo es vinculante tras nuestra confirmación.",
   "r.progress": "Progreso",
   "s.guests": "Personas", "s.date": "Fecha", "s.time": "Hora", "s.details": "Datos", "s.confirm": "Confirmación",
   "r.howMany": "¿Cuántas personas?",
@@ -554,6 +559,7 @@ const es: Dict = {
 };
 
 const pt: Dict = {
+  "nav.about": "Sobre nós",
   lang: "Idioma",
   "nav.home": "Início", "nav.menu": "Menu", "nav.book": "Reservar", "nav.bookShort": "Reservar",
   "nav.open": "Abrir menu", "nav.close": "Fechar menu", "nav.main": "Navegação principal",
@@ -591,7 +597,7 @@ const pt: Dict = {
   "menu.sample": "Menu de exemplo – pratos e preços a confirmar. Alergénios mediante pedido.",
   "menu.cats": "Categorias",
   "r.title": "Reserva",
-  "r.demo": "Confirmação pessoal – o pedido só é vinculativo após a nossa confirmação.",
+  "r.requestNotice": "Confirmação pessoal – o pedido só é vinculativo após a nossa confirmação.",
   "r.progress": "Progresso",
   "s.guests": "Pessoas", "s.date": "Data", "s.time": "Hora", "s.details": "Dados", "s.confirm": "Confirmação",
   "r.howMany": "Quantas pessoas?",
