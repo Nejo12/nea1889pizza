@@ -9,7 +9,7 @@ test('brand: site palette, serif/display fonts with safe fallbacks, wordmark, ta
   assert.match(html,/Cinzel[^;"]*Georgia/);assert.match(html,/Cormorant Garamond[^;"]*Georgia/);
   assert.match(html,/NEA/);assert.match(html,/1889/);assert.match(html,/Naples at heart\. Berlin by choice\./);assert.match(html,/Zimmerstraße 26\/27/);assert.match(html,/Berlin – Napoli – Sempre/);}
 });
-test('structure: email-safe (tables, inline styles, no scripts/remote images), preheader, lang, dark-scheme meta',()=>{
+test('structure: email-safe (tables, inline styles, no scripts or external fonts), preheader, lang, dark-scheme meta',()=>{
  const {html}=renderEmail('pending',b,url);
  assert.match(html,/^<!doctype html>/i);assert.match(html,/<html lang="de"/);assert.match(html,/<meta name="color-scheme"/);assert.match(html,/<table[^>]*role="presentation"/);
  assert.doesNotMatch(html,/<script|<img|@import|<link/i);assert.match(html,/display:none[^>]*>[^<]*Anfrage/);
@@ -41,4 +41,59 @@ test('staff UI does not falsely claim automatic reservation emails never occur',
  assert.doesNotMatch(ui,/Keine automatische E-Mail/);
  assert.match(ui,/E-Mail je nach Reservierungsereignis/);
  assert.match(ui,/Bei Statusänderungen kann eine E-Mail versendet werden/);
+});
+
+
+test('supplied decorative pattern is fixed, first-party and safe when email images are disabled',()=>{
+ const fs=require('node:fs'),crypto=require('node:crypto');
+ const asset=fs.readFileSync('public/email/rm-background-0e7d40b0.jpg');
+ assert.equal(crypto.createHash('sha256').update(asset).digest('hex'),'0e7d40b094aac7a2293ccfa12c12b62e7a54f395d8a0f3e6bc0233f02f54948f');
+ for(const kind of ['pending','confirmed','cancelled']){
+  const {html}=renderEmail(kind,b,url);
+  assert.match(html,/background="https:\/\/nea1889.pizza\/email\/rm-background-0e7d40b0.jpg"/);
+  assert.match(html,/bgcolor="#500F12"/);
+  assert.match(html,/background-color:#500F12/);
+  assert.match(html,/@media only screen and \(max-width:480px\)/);
+  assert.match(html,/max-width:600px/);
+  assert.ok(html.includes('<!--[if mso]>'));
+  assert.match(html,/aria-label="Reservierungsdetails"/);
+  assert.match(html,/<th scope="row"/);
+  assert.doesNotMatch(html,/<script|<img|<link|@import|data:image|cid:|@font-face/i);
+  assert.doesNotMatch(html,/url\([^)]*(?:reservation|example.test)/i);
+ }
+});
+
+test('visual fixture is synthetic, side-effect free and absent in Production',()=>{
+ const {GET}=support.load('app/email-preview/route.ts',{'@/lib/email':{renderEmail}});
+ const env=process.env.VERCEL_ENV,node=process.env.NODE_ENV;
+ try{
+  process.env.NODE_ENV='production';process.env.VERCEL_ENV='production';
+  assert.equal(GET(new Request('https://example.test/email-preview')).status,404);
+  delete process.env.VERCEL_ENV;
+  assert.equal(GET(new Request('https://example.test/email-preview')).status,404);
+  process.env.VERCEL_ENV='preview';
+  for(const kind of ['pending','confirmed','cancelled']){
+   const response=GET(new Request('https://example.test/email-preview?kind='+kind));
+   assert.equal(response.status,200);
+   assert.equal(response.headers.get('Cache-Control'),'no-store');
+   assert.equal(response.headers.get('X-Robots-Tag'),'noindex, nofollow');
+   assert.match(response.headers.get('Content-Security-Policy'),/default-src 'none'/);
+  }
+  assert.equal(GET(new Request('https://example.test/email-preview?kind=invalid')).status,404);
+ }finally{
+  if(env===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=env;
+  if(node===undefined)delete process.env.NODE_ENV;else process.env.NODE_ENV=node;
+ }
+});
+
+
+test('redesigned email keeps guest text and link attributes escaped and never inserts guest notes',()=>{
+ const hostile={...b,name:'<img src=x onerror="alert(1)"> & guest',notes:'PRIVATE NOTES NOT FOR EMAIL'};
+ const link='https://example.test/reservation#safe" onmouseover="bad<';
+ const {html,text}=renderEmail('pending',hostile,link);
+ assert.doesNotMatch(html,/<img|onmouseover="bad|PRIVATE NOTES NOT FOR EMAIL/);
+ assert.match(html,/&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt; &amp; guest/);
+ assert.ok(html.includes('href="https://example.test/reservation#safe&quot; onmouseover=&quot;bad&lt;"'));
+ assert.ok(text.includes(hostile.name));
+ for(const kind of ['confirmed','cancelled'])assert.ok(!renderEmail(kind,b,link).html.includes(link));
 });
