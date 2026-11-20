@@ -46,7 +46,7 @@ test('current video homepage renders the supplied story and working reservation/
 
 test('current reservation styling wraps the real server-backed wizard, not the exported localStorage demo',()=>{
  const html=renderer()('app/(site)/reservierung/view.tsx');
- assert.match(html,/rm_background-1366\.webp/);
+ assert.match(html,/\/home\/rm_background-1366\.webp/);
  assert.match(html,/Quanti siete/);
  assert.equal((html.match(/aria-pressed="(?:true|false)"/g)||[]).length,12);
  assert.match(html,/href="\/login"/);
@@ -57,16 +57,16 @@ test('current reservation styling wraps the real server-backed wizard, not the e
  assert.doesNotMatch(source,/saveReservations|loadReservations|localStorage|@\/lib\/reservations/);
 });
 
-test('all new media points to immutable export IDs on the original Lovable host, never the custom domain',()=>{
+test('site media uses only inventoried same-origin static files, never a Lovable publishing URL',()=>{
  const manifest=JSON.parse(fs.readFileSync('docs/lovable-media-manifest.json','utf8'));
  const sources=['app/(site)/view.tsx','components/site/HomeStory.tsx','components/site/SiteChrome.tsx','app/(site)/about/view.tsx'].map(f=>fs.readFileSync(f,'utf8')).join('\n');
- const urls=[...sources.matchAll(/https:\/\/[^"\s]+\/__l5e\/assets-v1\/[^"\s]+/g)].map(m=>m[0]);
- assert.ok(urls.length>20,'current design media references are present');
- const exported=new Set(Object.values(manifest).map(a=>a.url));
- for(const url of urls){assert.ok(exported.has(url),url);assert.match(url,/^https:\/\/nea-naples-table-booking\.lovable\.app\/__l5e\/assets-v1\/[a-f0-9-]{36}\//);}
- for(const asset of Object.values(manifest).filter(a=>a.localUrl))assert.equal(fs.statSync('public'+asset.localUrl).size,asset.size);
+ assert.doesNotMatch(sources,/lovable\.app|__l5e\/assets-v1/);
+ const urls=[...sources.matchAll(/url: "([^"]+)"/g)].map(m=>m[1]);
+ assert.ok(urls.length>30);
+ const exported=new Set(Object.values(manifest).map(a=>a.localUrl));
+ for(const url of urls){assert.ok(exported.has(url),url);assert.ok(fs.existsSync('public'+url),url);}
+ for(const asset of Object.values(manifest))assert.equal(fs.statSync('public'+asset.localUrl).size,asset.size);
 });
-
 
 test('production reservation copy never describes browser-only demo bookings in any language',()=>{
  const m={exports:{}};
@@ -83,4 +83,40 @@ test('production reservation copy never describes browser-only demo bookings in 
  const wizard=fs.readFileSync('app/(site)/reservierung/view.tsx','utf8');
  assert.match(wizard,/done.emailNotifications \? "c.mailSent" : "c.noMail"/);
  assert.match(wizard,/t\("r.requestNotice"\)/);
+});
+
+
+test('all 34 recovered media objects retain their original hashes and binary types',()=>{
+ const crypto=require('node:crypto');
+ const manifest=JSON.parse(fs.readFileSync('docs/lovable-media-manifest.json','utf8'));
+ const recovered=Object.values(manifest).filter(a=>a.sha256);
+ assert.equal(recovered.length,34);assert.equal(recovered.filter(a=>a.mimeType==='video/mp4').length,4);
+ assert.equal(recovered.reduce((sum,a)=>sum+a.size,0),11059362);
+ for(const asset of recovered){
+  const bytes=fs.readFileSync('public'+asset.localUrl);
+  assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),asset.sha256,asset.localUrl);
+  if(asset.mimeType==='image/webp'){
+   assert.equal(bytes.toString('ascii',0,4),'RIFF',asset.localUrl);
+   assert.equal(bytes.toString('ascii',8,12),'WEBP',asset.localUrl);
+  }else{assert.equal(asset.mimeType,'video/mp4');assert.equal(bytes.toString('ascii',4,8),'ftyp',asset.localUrl);}
+ }
+ assert.equal(fs.readdirSync('public/story').filter(f=>f.includes('.chunk-')).length,0);
+});
+
+test('cached legacy media URLs redirect once to exact local files without an external loop',async()=>{
+ const config=(await import('../next.config.mjs')).default;
+ const redirects=await config.redirects();
+ const manifest=JSON.parse(fs.readFileSync('docs/lovable-media-manifest.json','utf8'));
+ assert.equal(redirects.length,Object.keys(manifest).length);
+ assert.equal(new Set(redirects.map(r=>r.source)).size,redirects.length);
+ for(const r of redirects){
+  assert.match(r.source,/^\/__l5e\/assets-v1\/[a-f0-9-]{36}\//);
+  assert.match(r.destination,/^\/(home|story|brochure)\//);
+  assert.ok(fs.existsSync('public'+r.destination),r.destination);
+  assert.equal(r.permanent,false);
+  assert.ok(!redirects.some(other=>other.source===r.destination),'no redirect chain');
+ }
+ const chrome=fs.readFileSync('components/site/SiteChrome.tsx','utf8');
+ assert.match(chrome,/url: "\/home\/rm_background-1366\.webp"/);
+ assert.match(chrome,/url: "\/home\/rm_background-768\.webp"/);
 });

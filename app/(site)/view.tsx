@@ -5,11 +5,11 @@ import { useEffect, useRef } from "react";
 import { useI18n } from "@/lib/site/i18n";
 import { HomeStory } from "@/components/site/HomeStory";
 import { LanguageDropdown } from "@/components/site/LanguageSwitcher";
-const video1280 = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/70c16a96-28f8-445a-8428-2e7f5b97c628/pizza-loop-1280.mp4" };
-const video720 = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/fbb24c1f-efd5-463c-a9fe-0f12cfe8cfc2/pizza-loop-720.mp4" };
-const poster = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/52d1a39d-9887-4198-a85e-3790c0263100/pizza-loop-poster.webp" };
-const title = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/7a390344-53f1-491e-921d-281b94c49c0c/title.webp" };
-const titleSm = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/be52a7e7-13ad-4451-aa08-d6e1ac814935/title-sm.webp" };
+const video1280 = { url: "/home/pizza-loop-1280.mp4" };
+const video720 = { url: "/home/pizza-loop-720.mp4" };
+const poster = { url: "/home/pizza-loop-poster.webp" };
+const title = { url: "/home/title.webp" };
+const titleSm = { url: "/home/title-sm.webp" };
 
 const linkBase =
   "home-link group absolute flex flex-col items-center text-center text-plaster drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ochre";

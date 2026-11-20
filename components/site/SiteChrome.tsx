@@ -8,8 +8,8 @@ import { LanguageDropdown, LanguageTiles } from "./LanguageSwitcher";
 import type { Key } from "@/lib/site/i18n-dict";
 const marble = "/brochure/marble-1920.webp";
 const marbleSm = "/brochure/marble-mobile.webp";
-const rmBg = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/6ce4f5b3-d29c-4f1a-9dfc-8cfdc3cc0ecc/rm_background-1366.webp" };
-const rmBgSm = { url: "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/8ff1678d-6e00-4b89-a894-36b320c4e7f7/rm_background-768.webp" };
+const rmBg = { url: "/home/rm_background-1366.webp" };
+const rmBgSm = { url: "/home/rm_background-768.webp" };
 const emblem = "/brochure/emblem-160.webp";
 
 const nav = [

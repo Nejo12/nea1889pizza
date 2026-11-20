@@ -13,11 +13,11 @@ The Founder supplied `nea-naples-table-booking.zip` and confirmed that its curre
 
 The public request flow remains `GET /api/availability` → `POST /api/booking` → personal `/reservation#<token>` → token-authenticated status/cancellation. PostgreSQL remains authoritative. Idempotency, consent, origin checks, server-side validation, occupancy transactions and email behavior are unchanged. A request remains pending until staff confirms it; the interface must never claim a confirmed table merely because submission succeeds.
 
-## Media provenance and remaining hosting dependency
+## Media provenance and local recovery
 
-The ZIP contains most new photos/videos as `.asset.json` pointers, not their bytes. Exact exported IDs are retained on `https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/...`, the original publishing host from the export. They deliberately do not reference `nea1889.pizza`, so switching the custom domain cannot create self-referencing/missing asset paths. `lovable-media-manifest.json` records the export URLs and sizes; existing local brochure assets of matching sizes are reused unchanged.
+The original source ZIP contained most new photos/videos as `.asset.json` pointers rather than their bytes. The initial port retained original object IDs on the Lovable publishing host, which later redirected asset requests to the custom domain and produced 404s. See [media recovery](media-recovery.md) for evidence and scope.
 
-**Do not retire the Lovable publishing project yet.** New media still depends on that host. Before independent hosting/retirement, obtain the actual media export, verify its bytes and replace the remote references with same-origin files. No booking tokens or guest details are included in asset URLs; the app retains its `no-referrer` policy.
+The owner subsequently supplied all 34 original optimized binary objects in three ZIPs. They were independently hash/size/ID checked, images decoded and videos fully decoded, then installed under `public/home/` and `public/story/`. Frontend references are now same-origin, and exact legacy asset paths redirect once to these static files. The media manifest records provenance and SHA-256. No obsolete design or composed screenshot was substituted; the original responsive background WebPs are restored. This removes the known frontend media dependence on the publishing host, but does not authorize deleting Lovable resources.
 
 ## Verification and release gates
 
@@ -31,4 +31,4 @@ At investigation time:
 - Production `AUTHORIZED_ORIGINS` does not include the custom apex/www origins.
 - Production `RESEND_API_KEY` and `EMAIL_FROM` are absent. Missing email configuration does not stop database persistence; it disables email.
 
-Before release, configure an isolated Preview database via a separately approved configuration task, verify media and guest interaction on the exact PR preview, then test submission → persistence → staff confirmation → personal status/cancellation and approved-recipient email. Staff-auth verification requires an accessible approved test identity. Configure production origins/email, backups, rollback and actual DB access only through a separately approved production setup/cutover plan. Do not merge automatically or change production DNS as part of this source integration.
+Historical release checklist (not current live configuration): before release, configure an isolated Preview database via a separately approved configuration task, verify media and guest interaction on the exact PR preview, then test submission → persistence → staff confirmation → personal status/cancellation and approved-recipient email. Staff-auth verification requires an accessible approved test identity. Configure production origins/email, backups, rollback and actual DB access only through a separately approved production setup/cutover plan. Do not merge automatically or change production DNS as part of this source integration.
