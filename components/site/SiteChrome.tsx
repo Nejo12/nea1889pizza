@@ -8,8 +8,8 @@ import { LanguageDropdown, LanguageTiles } from "./LanguageSwitcher";
 import type { Key } from "@/lib/site/i18n-dict";
 const marble = "/brochure/marble-1920.webp";
 const marbleSm = "/brochure/marble-mobile.webp";
-const rmBg = { url: "/email/rm-background-0e7d40b0.jpg" };
-const rmBgSm = { url: "/email/rm-background-0e7d40b0.jpg" };
+const rmBg = { url: "/home/rm_background-1366.webp" };
+const rmBgSm = { url: "/home/rm_background-768.webp" };
 const emblem = "/brochure/emblem-160.webp";
 
 const nav = [

@@ -1,131 +1,291 @@
 {
   "home/pizza-loop-1280.mp4": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/70c16a96-28f8-445a-8428-2e7f5b97c628/pizza-loop-1280.mp4",
-    "size": 2206157
+    "size": 2206157,
+    "localUrl": "/home/pizza-loop-1280.mp4",
+    "sha256": "64f281e9a2b130e6c35ba612d48d853f30ae42fc172d8f25208456a67c68413a",
+    "mimeType": "video/mp4",
+    "width": 1280,
+    "height": 720
   },
   "home/pizza-loop-720.mp4": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/fbb24c1f-efd5-463c-a9fe-0f12cfe8cfc2/pizza-loop-720.mp4",
-    "size": 688587
+    "size": 688587,
+    "localUrl": "/home/pizza-loop-720.mp4",
+    "sha256": "cfbd986c2d98b1307090f6027156b3f04b2c19fe771de03ea6d5cdd80fc3b031",
+    "mimeType": "video/mp4",
+    "width": 720,
+    "height": 406
   },
   "home/pizza-loop-poster.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/52d1a39d-9887-4198-a85e-3790c0263100/pizza-loop-poster.webp",
-    "size": 32416
+    "size": 32416,
+    "localUrl": "/home/pizza-loop-poster.webp",
+    "sha256": "fb5931efb90ff58d3a2c908bce7ce58e4a1e04686cef3c0ac4e5b890890148d3",
+    "mimeType": "image/webp",
+    "width": 1280,
+    "height": 720
   },
   "home/title.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/7a390344-53f1-491e-921d-281b94c49c0c/title.webp",
-    "size": 47490
+    "size": 47490,
+    "localUrl": "/home/title.webp",
+    "sha256": "0f5242faf101a288fe390679c0e88e341b85f5199c0b373102131d74493e7616",
+    "mimeType": "image/webp",
+    "width": 896,
+    "height": 343
   },
   "home/title-sm.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/be52a7e7-13ad-4451-aa08-d6e1ac814935/title-sm.webp",
-    "size": 20646
+    "size": 20646,
+    "localUrl": "/home/title-sm.webp",
+    "sha256": "c9bb0bf766d133d8485c3665e606112140d335a146f357ca1894ec21ec2f2e84",
+    "mimeType": "image/webp",
+    "width": 448,
+    "height": 171
   },
   "story/counter-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/b86e0c90-f3dd-48c8-ae23-cf2e4400d0f4/counter-640.webp",
-    "size": 21678
+    "size": 21678,
+    "localUrl": "/story/counter-640.webp",
+    "sha256": "c758ee511d9bb2fb0cfae75ac1a1af56981f314594065c9c9d0d8017bf144158",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 427
   },
   "story/counter-1280.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/8ba7482b-03d4-45ad-8caf-309e8e22e51b/counter-1280.webp",
-    "size": 52158
+    "size": 52158,
+    "localUrl": "/story/counter-1280.webp",
+    "sha256": "0cfce258694e12d04b9618d2a3588fd0bcf86216194a67ae45c2cb068ad9485b",
+    "mimeType": "image/webp",
+    "width": 1280,
+    "height": 855
   },
   "story/logo-nea-stack.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/bc5a8d3e-11c9-4ead-b87a-084cf9447c71/logo-nea-stack.webp",
-    "size": 48958
+    "size": 48958,
+    "localUrl": "/story/logo-nea-stack.webp",
+    "sha256": "887314b12eae2097ff7458bd3449698bbfec9eaa2602a0f5e358e464f45d66b1",
+    "mimeType": "image/webp",
+    "width": 794,
+    "height": 606
   },
   "story/logo-nea1889.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/fdb82fad-6dde-4d0b-884d-78ce300d8a65/logo-nea1889.webp",
-    "size": 67538
+    "size": 67538,
+    "localUrl": "/story/logo-nea1889.webp",
+    "sha256": "cdb2a8848f5a262e40ae603329f50007202ce5adc3f7ef5ffe65e30ac8156d6c",
+    "mimeType": "image/webp",
+    "width": 1032,
+    "height": 416
   },
   "story/emblem-round.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/dccdf172-1c68-462a-a11f-c4b675b765a2/emblem-round.webp",
-    "size": 21080
+    "size": 21080,
+    "localUrl": "/story/emblem-round.webp",
+    "sha256": "6623ee04e4697720ecaaee6e2efe1234dcd8dd552237a246357040fd9ca991ed",
+    "mimeType": "image/webp",
+    "width": 291,
+    "height": 291
   },
   "story/emblem-tile.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/2547a46b-9991-406d-85b7-1cf361749801/emblem-tile.webp",
-    "size": 5658
+    "size": 5658,
+    "localUrl": "/story/emblem-tile.webp",
+    "sha256": "ff906299d969297d6d73a8e95ce42f827415888d4bbf54e6608b3f28f439c833",
+    "mimeType": "image/webp",
+    "width": 242,
+    "height": 242
   },
   "story/ore-wide.mp4": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/d5c525ef-f69f-4f01-a5ca-56205ebc3674/ore-wide.mp4",
-    "size": 4046992
+    "size": 4046992,
+    "localUrl": "/story/ore-wide.mp4",
+    "sha256": "07038b0094fae1ac81ebef3489648b9492aada77d263d30cc820bd3d51e51839",
+    "mimeType": "video/mp4",
+    "width": 1024,
+    "height": 424
   },
   "story/ore-tall.mp4": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/1979c979-4d1e-497e-b329-b171221e677a/ore-tall.mp4",
-    "size": 3213194
+    "size": 3213194,
+    "localUrl": "/story/ore-tall.mp4",
+    "sha256": "bf29ba65a535925340ed488dba5201b7e11618e956dceef53549a0edfbdf6a8b",
+    "mimeType": "video/mp4",
+    "width": 512,
+    "height": 848
   },
   "story/ore-wide.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/f3bfc92f-3a44-4fc9-a086-0d17bce4ceb9/ore-wide.webp",
-    "size": 13318
+    "size": 13318,
+    "localUrl": "/story/ore-wide.webp",
+    "sha256": "b2162510a10e78fda73e708e7202bc3026be99f4471d16a71dcdf00294cbde33",
+    "mimeType": "image/webp",
+    "width": 1024,
+    "height": 424
   },
   "story/ore-tall.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/36085900-8e78-45bd-ada0-af6ead59cad8/ore-tall.webp",
-    "size": 11902
+    "size": 11902,
+    "localUrl": "/story/ore-tall.webp",
+    "sha256": "be7e238cf1f3185a58db9eb73e5a857fbbc9453bea92f7e3d7e7d823a5285774",
+    "mimeType": "image/webp",
+    "width": 512,
+    "height": 848
   },
   "story/dough-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/b924709e-6921-43c3-b0a9-71af5e4bc81b/dough-640.webp",
-    "size": 21876
+    "size": 21876,
+    "localUrl": "/story/dough-640.webp",
+    "sha256": "249355f6b3234d360e1531cef6803b0c99f91ec67dc4a286b73551a4ae296a63",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 360
   },
   "story/jars-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/3cf8061d-79a6-4d36-8043-5e0e4fa17b27/jars-640.webp",
-    "size": 23846
+    "size": 23846,
+    "localUrl": "/story/jars-640.webp",
+    "sha256": "a111f08e61b9eca4ff5164d164ad0b793f578839f64d95a8ba8f3d83870e5b0f",
+    "mimeType": "image/webp",
+    "width": 324,
+    "height": 576
   },
   "story/slice-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/1636ad63-6be1-427e-939c-70bec5f32c04/slice-640.webp",
-    "size": 20868
+    "size": 20868,
+    "localUrl": "/story/slice-640.webp",
+    "sha256": "b2aec5e9b7e88e9de6a52eedc87badec1c92ceac5030af86c03c078b13ce9c9f",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 360
   },
   "story/slice-1280.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/2619e047-52b9-4124-a951-5afe7cda93ed/slice-1280.webp",
-    "size": 49130
+    "size": 49130,
+    "localUrl": "/story/slice-1280.webp",
+    "sha256": "24509abe61f891c5d8fb97b0de46c60bbe58858ae53db7588794ec466627bb2d",
+    "mimeType": "image/webp",
+    "width": 1280,
+    "height": 720
   },
   "story/oven-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/199ffd47-12fe-4c1b-8b8b-943844a04890/oven-640.webp",
-    "size": 31600
+    "size": 31600,
+    "localUrl": "/story/oven-640.webp",
+    "sha256": "d510f89bb5ccf070ae82e85b085cbfe06f388a9d1842eada082111c7a7ff156c",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 960
   },
   "story/hands-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/79b9a7ba-d5f4-43ea-943a-3828b2666bdc/hands-640.webp",
-    "size": 35878
+    "size": 35878,
+    "localUrl": "/story/hands-640.webp",
+    "sha256": "9d8e944f922f99f61baa94c86b30110e9053e6e52cdb4699022b64bd0fc0d153",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 960
   },
   "story/knead-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/e1ac2d19-e8c5-4d60-aa43-560f8f7523f4/knead-640.webp",
-    "size": 34792
+    "size": 34792,
+    "localUrl": "/story/knead-640.webp",
+    "sha256": "e436f6f31e8a35dba9df09f7f9af0bbe3ed5d54a8ee5124b1df6473328b65768",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 1138
   },
   "story/drink-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/b0a56c3e-3399-4092-8460-78ff46bc0d64/drink-640.webp",
-    "size": 18262
+    "size": 18262,
+    "localUrl": "/story/drink-640.webp",
+    "sha256": "b62543bb04cb7ce09fd9a4b9c559f5ef22445d4d0629bf8039973fea02e30fe8",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 960
   },
   "story/peel-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/64528658-dc85-484e-be6a-24fc41021aba/peel-640.webp",
-    "size": 29964
+    "size": 29964,
+    "localUrl": "/story/peel-640.webp",
+    "sha256": "ca3b20fa3d881a5078dbcd92ea04489a6500f7e9e0a741c6c01b28619011a36d",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 960
   },
   "story/fold-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/67628eb7-9b05-4429-9347-349bdffdcdbd/fold-640.webp",
-    "size": 25864
+    "size": 25864,
+    "localUrl": "/story/fold-640.webp",
+    "sha256": "1adc924ac1f4534181e731f7cd72f1d5ee333de1e35430f557888c59d8d60f04",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 427
   },
   "story/neon-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/9e6fefb4-e112-43c2-8011-39bdaa18d174/neon-640.webp",
-    "size": 11634
+    "size": 11634,
+    "localUrl": "/story/neon-640.webp",
+    "sha256": "bedb15205640dfcae2a6ee074d5adb3b8f454f5e58cec9ff6a0732280c411813",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 360
   },
   "story/neon-1280.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/17010730-545a-4602-b2d1-fd95c9997c92/neon-1280.webp",
-    "size": 26240
+    "size": 26240,
+    "localUrl": "/story/neon-1280.webp",
+    "sha256": "3b37f5f57bc4c1ce2c266a624c9e0fe312bfc59792466943c41d5fb7b1189927",
+    "mimeType": "image/webp",
+    "width": 1280,
+    "height": 720
   },
   "story/oven2-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/070d0fd5-73c5-4337-9420-3badb3b72921/oven2-640.webp",
-    "size": 10930
+    "size": 10930,
+    "localUrl": "/story/oven2-640.webp",
+    "sha256": "15e2748067f5ff5595e80adb3e198f15388c6d693a52613ec92a0c71b0941218",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 427
   },
   "story/dessert-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/8300f9dc-338f-4256-8114-2adc396be964/dessert-640.webp",
-    "size": 25556
+    "size": 25556,
+    "localUrl": "/story/dessert-640.webp",
+    "sha256": "1cd9291ca565918d511ecad785bad3a90a0c16540d9001c20b5032491122b814",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 959
   },
   "story/cut-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/2e118541-ed11-45b1-bf60-2d838e67ccfe/cut-640.webp",
-    "size": 30196
+    "size": 30196,
+    "localUrl": "/story/cut-640.webp",
+    "sha256": "bbe5ebdc492533b631bc128fcd69b5d6082aa456814f54ebf5cc2185e225e1ff",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 960
   },
   "story/tray-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/e7ac7557-d5da-49d2-8817-5e8bb2a45893/tray-640.webp",
-    "size": 10948
+    "size": 10948,
+    "localUrl": "/story/tray-640.webp",
+    "sha256": "76718710345ada8fdb8780eae56deb00c9ca5cfbeb49497760c8ca5942ea2c67",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 427
   },
   "story/topview-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/8b89bc04-a5b7-4ee4-8194-607b7802a340/topview-640.webp",
-    "size": 41606
+    "size": 41606,
+    "localUrl": "/story/topview-640.webp",
+    "sha256": "a3df41246259f3fda58dbe955efe72a8e7327fb0c359d328890b6f71bf6bff98",
+    "mimeType": "image/webp",
+    "width": 640,
+    "height": 360
   },
   "brochure/opt/hero-vesuvio-640.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/7879ae42-6365-406c-9cc7-44646c0b81e9/hero-vesuvio-640.webp",
@@ -219,10 +379,20 @@
   },
   "home/rm_background-1366.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/6ce4f5b3-d29c-4f1a-9dfc-8cfdc3cc0ecc/rm_background-1366.webp",
-    "size": 76964
+    "size": 76964,
+    "localUrl": "/home/rm_background-1366.webp",
+    "sha256": "9e13de05d4f12e2cb3e9db8da53c3e37207a7d572eba34590b247570ca7a604d",
+    "mimeType": "image/webp",
+    "width": 1366,
+    "height": 768
   },
   "home/rm_background-768.webp": {
     "url": "https://nea-naples-table-booking.lovable.app/__l5e/assets-v1/8ff1678d-6e00-4b89-a894-36b320c4e7f7/rm_background-768.webp",
-    "size": 35436
+    "size": 35436,
+    "localUrl": "/home/rm_background-768.webp",
+    "sha256": "446c535c13bf895075132f2d07d798b420f244cbf1d06bf6281c476d95532cf7",
+    "mimeType": "image/webp",
+    "width": 768,
+    "height": 432
   }
 }

@@ -1,29 +1,39 @@
-# Media-source discrepancy — 2026-11-20
+# Media recovery — 2026-11-20
 
-## Confirmed state
+## Cause and source of truth
 
-- Vercel `nea1889-app` is linked to `Nejo12/nea1889pizza`, production branch `main`. The live apex resolves to its READY deployment for `562472f` (merge of PR #47). There is no observed Vercel Git-link or custom-domain takeover by the private Lovable repository.
-- `www.nea1889.pizza` is configured as a permanent redirect to `nea1889.pizza`; Previews remain protected. Preserve the database, mail settings and DNS.
-- The current frontend's new home/story media still uses absolute URLs on `nea-naples-table-booking.lovable.app`. A public hostname diagnostic now reaches the Vercel-rendered home through that hostname. Production request logs show exact exported `/__l5e/assets-v1/...` image paths failing with 404 on the canonical domain.
-- This is consistent with a publishing-host canonical redirect/proxy change. It does not prove a specific Lovable commit or who published it. The private Lovable source is inaccessible in this session, so no comparison with its current commits was possible.
-- Earlier documentation assumed the Lovable publishing host would continue serving media independently after cutover. That assumption is no longer safe. Export asset UUIDs are identifiers, not a guarantee of byte availability on the publishing hostname.
+Vercel `nea1889-app` remains linked to `Nejo12/nea1889pizza`, production branch `main`. The reported media failures were not evidence of a repository takeover. Lovable's recovery report confirms a sampled asset URL on `nea-naples-table-booking.lovable.app` returns 302 to the same `/__l5e/assets-v1/...` path on `nea1889.pizza`, where the Next.js app did not have the file. Production request logs independently showed those 404s. No specific Lovable commit, person or publication is established as the redirect's cause.
 
-## Bounded recovery in this PR
+The initial design port retained the Lovable publishing hostname as an external media origin. That assumption was unsafe after the host began redirecting. Original object IDs identify media; they do not guarantee that a publishing hostname remains a usable asset origin.
 
-Use the supplied `rm_background.jpeg` bytes already committed by the email-design PR at `/email/rm-background-0e7d40b0.jpg` as both desktop/mobile reservation/menu/status backgrounds. It matches the user's approved red pattern and no longer depends on the Lovable hostname. Regression tests pin the local URL and original SHA-256.
+## Complete binary recovery
 
-This intentionally does **not** redirect missing images back to the publishing hostname: that could create loops. It does not substitute the obsolete design, disable booking safeguards, clear guest storage or change DNS.
+The owner supplied three independently extractable ZIPs containing original optimized objects, a manifest and two raw chunks for `story/ore-wide.mp4`. The maintainer extracted them without executing the supplied helper scripts, verified each chunk hash/offset/order, concatenated chunk 001 then 002, and independently validated every resulting object:
 
-## Required to finish full media migration
+- **34 of 34 original media files**, 11,059,362 bytes total;
+- **30 WebP images** fully decoded with Pillow and checked against declared dimensions;
+- **4 MP4 videos** fully decoded with FFmpeg `-v error -xerror`;
+- SHA-256 and byte size checked against the recovery manifest;
+- original asset IDs and sizes checked against the pre-existing source inventory;
+- no HTML/error responses, replacement artwork, regenerated media or recompression.
 
-Obtain the actual current title/logo/photo/video files from the owner, not only `.asset.json` pointer files. The earlier ZIP includes mostly media pointers. `docs/lovable-media-manifest.json` inventories the exact exported names, IDs and expected sizes. Files must be reviewed against the current approved design, committed under public static paths with verified hashes/types, and all frontend references switched to those paths. If the design changed again, obtain a fresh source export plus its media binaries without `.env` files or secrets. Do not make a private repo public merely for this task.
+`docs/lovable-media-manifest.json` retains the original export URL/ID and records the local URL, SHA-256, MIME type and dimensions for each recovered object. All new binaries live under `public/home/` and `public/story/`. ZIPs, chunks, supplied helper scripts, credentials and manifests with personal data are not served.
 
-Prioritize title/title-sm artwork, pizza-loop poster/video, counter photo, stacked/round logos and emblem tile, then the remaining story assets. Retain Lovable resources until complete; do not delete a provider or overwrite the public site's design to make 404s disappear.
+The earlier supplied `homepage_title_top.png` was actually JPEG, and `scroll_second.jpeg` was a composed section screenshot. Neither was substituted for the originals; this avoids wrong transparency, cropping and duplicated text/logo overlays.
 
-## Staff conflicts
+## Runtime changes
 
-The staff update endpoint intentionally returns 409 for stale revisions, occupied tables or invalid allocations. The dashboard reloads after 409. Existing unit/PostgreSQL tests cover stale edits and atomic occupancy rollback. Recent response statuses alone do not identify which cause occurred, so the two observed 409s are not evidence of a broken concurrency guard. Never remove these checks or retry writes blindly; collect the visible error and operation first.
+- Homepage title/poster/video and all story photos/logos/videos use same-origin `/home/...` or `/story/...` URLs. Existing brochure media remains local.
+- Booking/menu/status backgrounds use the recovered original responsive WebPs, superseding PR #48's temporary JPEG fallback. The separately supplied JPEG remains the reservation-email header asset, unchanged.
+- Exact inventory-derived legacy `/__l5e/assets-v1/<id>/<file>` paths return a temporary redirect to their known static files. This repairs cached pages and the old publisher's forwarded asset requests without a broad proxy, arbitrary destinations or redirect loops. Unlisted paths remain unhandled.
+- Media identity and appearance are preserved. Layout, responsive source selection, translations, reservation rules, staff authentication, database, email behavior, DNS and deployment protection are unchanged. No tracking endpoint is introduced.
 
-## Release
+## Verification and release
 
-This is a partial media recovery, not a declaration that every media failure is fixed. Review the exact preview on desktop/mobile, preserve current booking behavior, and use the Founder's merge/release process. No booking writes, email sends, production mutations or private Lovable repository changes are part of this code patch.
+Regression tests check all recovered hashes/types/sizes, every rendered media URL's file existence, the absence of external Lovable URLs in runtime presentation, both original background variants, and exact one-hop compatibility redirects. Check desktop/mobile on the exact READY preview, including title transparency, story overlays, imagery and video/poster behavior. Browser image verification does not establish playback on every device.
+
+Only the Founder merges the PR. After merge, verify the exact Production revision and selected static/legacy media responses. No provider retirement is included: these files remove the known frontend media dependence, but deletion of Lovable or any other resource requires a separate dependency audit and explicit approval. No database writes, email sends or DNS/configuration changes are needed.
+
+## Unrelated staff conflicts
+
+The staff API intentionally returns 409 for stale revisions, occupied tables and invalid allocations. The dashboard reloads after 409; tests cover stale writes and atomic occupancy. Recent statuses alone do not identify the cause of individual conflicts. Do not remove these guards or retry mutations blindly; investigate the visible error and exact operation separately.
