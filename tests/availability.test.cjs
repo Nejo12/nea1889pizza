@@ -109,3 +109,29 @@ test('PostgreSQL: concurrent confirms plus availability reads — one winner, no
  assert.equal((await pg.admin.unsafe("select count(*)::int n from nea.occupancy where date='2099-12-05' and table_id='Tisch 1'"))[0].n,5);
  assert.equal(statusOf(await slots(pw,q),'19:00'),'full');
  assert.equal(statusOf(await slots(pw,{date:'2099-12-05',guests:'2'}),'19:00'),'full')});
+
+
+test('availability diagnostics allowlist codes and never log driver messages, queries, credentials or guest data',async()=>{
+ const original=console.error,logs=[];console.error=(...args)=>logs.push(args);
+ const secret='postgresql://private:password@private.example/db';
+ try{
+  for(const [error,expected] of [
+   [Object.assign(new Error(secret),{code:'28P01',query:'SELECT private',parameters:['guest@example.test']}),{code:'28P01',category:'authentication'}],
+   [Object.assign(new Error(secret),{code:'42P01'}),{code:'42P01',category:'relation_missing'}],
+   [Object.assign(new Error(secret),{code:'42501'}),{code:'42501',category:'permission_denied'}],
+   [Object.assign(new Error(secret),{code:'CONNECT_TIMEOUT'}),{code:'CONNECT_TIMEOUT',category:'connection_timeout'}],
+   [Object.assign(new Error(secret),{code:secret}),{code:'UNKNOWN',category:'unknown'}],
+   [Object.assign(new Error(secret),{code:'constructor'}),{code:'UNKNOWN',category:'unknown'}],
+   [new Error('DATABASE_URL is missing.'),{code:'UNKNOWN',category:'database_url_missing'}],
+   [new Error('Set NEA_DATABASE_SCHEMA explicitly.'),{code:'UNKNOWN',category:'invalid_schema_config'}],
+   [null,{code:'UNKNOWN',category:'unknown'}],
+  ]){
+   const broken=wire({prepare(){throw error},async batch(){throw error}});
+   const response=await broken.avail.GET(get({date:DAY,guests:'2'}));
+   assert.equal(response.status,503);assert.equal(response.headers.get('Cache-Control'),'no-store');
+   const body=await response.json();assert.equal(body.code,'unavailable');
+   assert.deepEqual(logs.at(-1),['reservation_availability_failed',expected]);
+   assert.doesNotMatch(JSON.stringify([body,logs]),/private|password|guest@example|SELECT/);
+  }
+ }finally{console.error=original}
+});
