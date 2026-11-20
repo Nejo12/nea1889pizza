@@ -66,3 +66,21 @@ test('all new media points to immutable export IDs on the original Lovable host,
  for(const url of urls){assert.ok(exported.has(url),url);assert.match(url,/^https:\/\/nea-naples-table-booking\.lovable\.app\/__l5e\/assets-v1\/[a-f0-9-]{36}\//);}
  for(const asset of Object.values(manifest).filter(a=>a.localUrl))assert.equal(fs.statSync('public'+asset.localUrl).size,asset.size);
 });
+
+
+test('production reservation copy never describes browser-only demo bookings in any language',()=>{
+ const m={exports:{}};
+ new Function('module','exports',ts.transpileModule(fs.readFileSync('lib/site/i18n-dict.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(m,m.exports);
+ const {DICT}=m.exports;
+ for(const [lang,dict] of Object.entries(DICT)){
+  assert.equal(dict['r.demo'],undefined,lang);
+  assert.ok(dict['r.requestNotice']?.length>10,lang);
+  for(const key of ['r.requestNotice','c.pending','c.number','c.noMail','c.mailSent']){
+   assert.ok(dict[key],lang+'.'+key);
+   assert.doesNotMatch(dict[key],/\bdemo\b|only saved in this browser|not sent to the restaurant/i,lang+'.'+key);
+  }
+ }
+ const wizard=fs.readFileSync('app/(site)/reservierung/view.tsx','utf8');
+ assert.match(wizard,/done.emailNotifications \? "c.mailSent" : "c.noMail"/);
+ assert.match(wizard,/t\("r.requestNotice"\)/);
+});

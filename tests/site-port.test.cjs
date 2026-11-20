@@ -32,7 +32,7 @@ test('simulated availability labels stay out; wizard uses only the server availa
   assert.match(view,/createAvailabilityLoader/);
   assert.ok(!/api\/availability/.test(view),'the loader module owns the endpoint call');
   assert.ok(!/localStorage|sessionStorage/.test(view));
-  for(const key of ['st.past','r.noSlots','c.pending','r.demo','c.noMail'])assert.equal(dict.split(`"${key}"`).length-1,6,`${key} must exist once per language`);
+  for(const key of ['st.past','r.noSlots','c.pending','r.requestNotice','c.noMail'])assert.equal(dict.split(`"${key}"`).length-1,6,`${key} must exist once per language`);
 });
 
 test('availability wording exists once per language and stays advisory',()=>{
